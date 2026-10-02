@@ -119,6 +119,23 @@ function setupVideoCarouselAutoplay() {
     });
 }
 
+// Run carousel autoplay only while the carousel is on screen. bulma-carousel
+// restarts autoplay by itself when the tab becomes visible again, so the
+// in-view state is re-applied after its own visibilitychange handler.
+function autoplayOnlyInView(carousels) {
+    if (!('IntersectionObserver' in window)) return;
+    carousels.forEach(function(carousel) {
+        var inView = false;
+        function apply() { if (inView && !document.hidden) carousel.start(); else carousel.stop(); }
+        carousel.stop();
+        new IntersectionObserver(function(entries) {
+            inView = entries[0].isIntersecting;
+            apply();
+        }, { threshold: 0.25 }).observe(carousel.element);
+        document.addEventListener('visibilitychange', function() { setTimeout(apply, 0); });
+    });
+}
+
 $(document).ready(function() {
     // Check for click events on the navbar burger icon
 
@@ -134,6 +151,7 @@ $(document).ready(function() {
 
 	// Initialize all div with carousel class
     var carousels = bulmaCarousel.attach('.carousel', options);
+    autoplayOnlyInView(carousels);
 	
     bulmaSlider.attach();
     
