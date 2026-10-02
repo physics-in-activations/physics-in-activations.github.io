@@ -386,6 +386,30 @@ function Stage({
     };
   }, [playing, duration, sections, lead]);
 
+  // Play only while the figure is on screen, so the first pass starts when
+  // the reader gets to it. Inside an iframe an implicit-root
+  // IntersectionObserver measures against the top-level viewport. Only a
+  // pause made here is undone on return; a reader's own pause is kept.
+  const playingRef = React.useRef(playing);
+  playingRef.current = playing;
+  React.useEffect(() => {
+    if (!stageRef.current || !('IntersectionObserver' in window)) return;
+    let autoPaused = false;
+    const io = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        if (autoPaused) {
+          autoPaused = false;
+          setPlaying(true);
+        }
+      } else if (playingRef.current) {
+        autoPaused = true;
+        setPlaying(false);
+      }
+    }, { threshold: 0.25 });
+    io.observe(stageRef.current);
+    return () => io.disconnect();
+  }, []);
+
   // Keyboard: space = play/pause, ← → = seek
   React.useEffect(() => {
     const onKey = e => {
