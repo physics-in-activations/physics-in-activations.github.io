@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Probing pipeline</title>
+<!-- engine.js is engine.jsx run through Babel (preset-react); edit the .jsx and recompile -->
+<style>
+  @font-face { font-family: 'Arimo'; font-weight: 400; src: url(fonts/Arimo-Regular-latin.woff2) format('woff2'); }
+  @font-face { font-family: 'Outfit'; font-weight: 500 600; src: url(fonts/Outfit-latin.woff2) format('woff2'); }
+  @font-face { font-family: 'KaTeX_Main'; font-weight: 400; src: url(fonts/KaTeX_Main-Regular.woff2) format('woff2'); }
+  @font-face { font-family: 'KaTeX_Math'; font-style: italic; font-weight: 400; src: url(fonts/KaTeX_Math-Italic.woff2) format('woff2'); }
+  html, body { margin: 0; background: #FFFFFF; }
+  .phases { display: flex; align-items: flex-start; gap: 4px; margin-top: 14px; font: 400 13px/1.2 'Arimo', Arial, sans-serif; }
+  .phases button { font: inherit; cursor: pointer; border: 0; background: none; padding: 0; color: #8A93A6; }
+  .phases button:focus-visible { outline: 2px solid #22A599; outline-offset: 3px; border-radius: 4px; }
+  .pp { flex: 0 0 auto; width: 26px; height: 26px; margin: -9px 8px 0 0; border-radius: 50%;
+        display: grid; place-items: center; color: #141821 !important; background: #EEF1F5 !important; }
+  .pp:hover { background: #E1E6ED !important; }
+  .ph { flex: 1 1 0; min-width: 0; text-align: left; }
+  .ph .bar { display: block; height: 3px; border-radius: 3px; background: #E3E7EE; overflow: hidden; }
+  .ph .fill { display: block; height: 100%; background: #22A599; transform-origin: 0 50%; }
+  .ph .lbl { display: block; padding-top: 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* a held phase is still playing: a highlight keeps sweeping over its full segment */
+  .ph .fill { position: relative; overflow: hidden; }
+  .ph.live .fill::after { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 35%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,.85), transparent);
+        animation: sweep 1.8s ease-in-out infinite; }
+  @keyframes sweep { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+  @media (prefers-reduced-motion: reduce) { .ph.live .fill::after { animation: none; } }
+  .cont { position: absolute; right: 14px; bottom: 12px; display: inline-flex; align-items: center; gap: 6px;
+          font: 400 13px/1 'Arimo', Arial, sans-serif; padding: 7px 12px 7px 14px; border: 0; border-radius: 999px;
+          background: #22A599; color: #fff; cursor: pointer; box-shadow: 0 2px 8px rgba(20,28,48,.12); }
+  .cont:hover { background: #1B8A80; }
+  .cont:focus-visible { outline: 2px solid #22A599; outline-offset: 2px; }
+  .ph:hover .lbl { color: #141821; }
+  .ph:hover .bar { background: #D3D9E3; }
+  .ph.on .lbl { color: #141821; }
+  @media (max-width: 480px) { .phases { font-size: 11px; } .pp { margin-right: 4px; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  window.__resources = {"v_dcau": "videos/source.mp4", "v_013e": "videos/latent.mp4", "v_2ppa": "videos/noise_t100.mp4", "v_2xdb": "videos/noise_t200.mp4", "v_opjn": "videos/noise_t300.mp4", "v_s1qn": "videos/noise_t400.mp4", "v_fsy0": "videos/noise_t500.mp4", "v_eu2n": "videos/noise_t600.mp4", "v_ol0w": "videos/noise_t700.mp4", "v_n8bw": "videos/noise_t800.mp4", "v_f3y2": "videos/noise_t900.mp4", "v_hswm": "videos/noise_t1000.mp4"};
+  window.OM_SCENES = '[{"name":"Source","dur":3.8,"desc":"The ground-truth clip appears on its own, filling the frame.","nat":3.2},{"name":"Encode","dur":5,"desc":"The camera pulls back and the encoder produces the clean latent next to it.","nat":3.6},{"name":"Noise","dur":5,"desc":"Noise is added to the latent, stepping through every level from t = 100 to t = 1000, then settling at t = 700, then settling at t = 500."},{"name":"Capture","dur":5.6,"desc":"The noised latent enters the diffusion transformer; its blocks light up and the activations we read out appear below."},{"name":"Probe","dur":5,"desc":"The transformer outputs the denoised latent; a linear ridge probe reads the pooled activations out to a physical target quantity."},{"name":"Overview","dur":6.4,"desc":"The camera zooms out to show the whole pipeline end to end.","nat":3.2}]';
+  window.OM_PLAYBACK = '{"mode":"loop"}';
+</script>
+<script src="react.production.min.js"></script>
+<script src="react-dom.production.min.js"></script>
+<script src="engine.js"></script>
+<script src="pipeline.js"></script>
+<script>
+  ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(Pipeline, { layout: 'classic' }));
+  // tell the embedding page how tall this is, whenever that changes
+  new ResizeObserver(() => parent.postMessage({figHeight: document.body.offsetHeight}, '*'))
+    .observe(document.body);
+</script>
+</body>
+</html>

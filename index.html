@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Primary Meta Tags -->
+  <meta name="title" content="Does Physics Live in the Activations?">
+  <meta name="description" content="Linear probes recover speed, direction, momentum and gravity from video diffusion transformer activations, localized at the object's tokens, and the probe directions steer generation.">
+  <meta name="keywords" content="video diffusion, world models, interpretability, linear probing, steering, physics, DiT">
+  <meta name="robots" content="index, follow">
+  <meta name="language" content="English">
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Does Physics Live in the Activations?">
+  <meta property="og:description" content="Localizing physical quantities in video diffusion models.">
+  <meta property="og:url" content="https://video-model-physics.github.io/">
+  <meta property="og:image" content="https://video-model-physics.github.io/static/images/overview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Does Physics Live in the Activations?">
+  <meta name="twitter:description" content="Localizing physical quantities in video diffusion models.">
+  <meta name="twitter:image" content="https://video-model-physics.github.io/static/images/overview.png">
+
+  <meta name="theme-color" content="#22A599">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://ajax.googleapis.com">
+
+  <title>Does Physics Live in the Activations? Localizing Physical Quantities in Video Diffusion Models</title>
+
+  <!-- Critical CSS - Load synchronously -->
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+  <link rel="stylesheet" href="static/css/custom.css">
+
+  <!-- Non-critical CSS - Load asynchronously -->
+  <link rel="preload" href="static/css/bulma-carousel.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="static/css/bulma-slider.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="static/css/fontawesome.all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="static/css/bulma-carousel.min.css">
+    <link rel="stylesheet" href="static/css/bulma-slider.min.css">
+    <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+  </noscript>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Defer non-critical JavaScript -->
+  <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script defer src="static/js/bulma-carousel.min.js"></script>
+  <script defer src="static/js/bulma-slider.min.js"></script>
+  <script defer src="static/js/index.js"></script>
+  <script defer src="static/js/placeholders.js"></script>
+  <script defer src="static/js/steering.js"></script>
+  <script defer src="static/js/extrapolation.js"></script>
+</head>
+<body>
+
+  <!-- Scroll to Top Button -->
+  <button class="scroll-to-top" onclick="scrollToTop()" title="Scroll to top" aria-label="Scroll to top">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+
+  <main id="main-content">
+
+  <!-- Title -->
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title">Does Physics Live in the Activations?</h1>
+            <h2 class="subtitle is-4 publication-subtitle">Localizing Physical Quantities in Video Diffusion Models</h2>
+            <span class="publication-venue">Under review · ICLR 2027</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Overview figure (Figure 1 of the paper) -->
+  <section class="hero teaser">
+    <div class="container is-max-widescreen">
+      <div class="hero-body">
+        <figure class="overview-figure">
+          <iframe class="fig-frame" src="static/appetizer/index.html" scrolling="no"
+               title="Overview: for each scenario (rolling, collision, projectile) the physical signal concentrates on the object's tokens; linear probes recover speed, momentum and gravity along the denoising trajectory; the probe transfers from ball to can and, injected back, flips the rolling direction."></iframe>
+        </figure>
+        <script>
+          // embedded figures post their own height (it changes with width), so no iframe crops them
+          addEventListener("message", e => {
+            if (!(e.data && e.data.figHeight)) return;
+            for (const f of document.querySelectorAll("iframe.fig-frame"))
+              if (e.source === f.contentWindow) f.style.height = e.data.figHeight + "px";
+          });
+        </script>
+        <h2 class="subtitle has-text-centered">
+          <strong>What a frozen video DiT knows about physics.</strong>
+          For each scenario, the physical signal concentrates on the object's tokens, which the probe pools as a disk-shaped
+          region of interest (<em>localization</em>; schematic heat, not a measured map). A linear probe recovers speed, total
+          momentum and gravity from the residual stream along the denoising trajectory (<em>probing</em>), and its direction
+          holds up downstream: it still reads the quantity once the ball is replaced by a can, while a full-resolution probe
+          injected back flips the rolling direction.
+        </h2>
+      </div>
+    </div>
+  </section>
+
+  <!-- Paper abstract -->
+  <section class="section hero is-light">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              Video generation models produce strikingly realistic sequences and are increasingly proposed as world models,
+              yet recent benchmarks reveal pronounced deficits in their physical reasoning. This raises the question of whether
+              these models internalize physical principles or merely reproduce familiar motion patterns.
+            </p>
+            <p>
+              We address this by probing internal representations of video DiTs for simulator-derived ground-truth physical
+              quantities spanning kinematic motion and rigid-body dynamics under gravity and contact. We find that these quantities are linearly decodable with high accuracy early in the
+              denoising process, substantially outperforming a baseline decoded directly from the model's own noised latents.
+              This indicates that the relevant physical information is actively constructed during denoising, rather than
+              already present in the input.
+            </p>
+            <p>
+              Additionally, we show that activations at on-object tokens carry the relevant physical information and that
+              quantities defined over multiple frames are readable from single latent-frames. Hence, information is sharply
+              localized within the token sequence and is <em>computed globally but stored locally</em>. The probes further
+              show partial extrapolation, transferring unchanged to scene variations and object configurations they were never
+              fit on. When fitted directly in the raw activation space, the probing directions can serve as steering vectors to
+              change the model's output.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key findings -->
+  <section class="section">
+    <div class="container is-max-desktop has-text-centered">
+      <h2 class="title is-3">Key Findings</h2>
+      <div class="columns">
+        <div class="column">
+          <div class="finding">
+            <span class="finding-num">01</span>
+            <h3 class="title is-5">Decodable</h3>
+            <p>Speed, direction, momentum and gravity are linearly decodable from the residual stream of Wan&nbsp;2.1, CogVideoX&nbsp;1.5 and Open-Sora&nbsp;2.0, early in denoising.</p>
+          </div>
+        </div>
+        <div class="column">
+          <div class="finding">
+            <span class="finding-num">02</span>
+            <h3 class="title is-5">Stored locally</h3>
+            <p>A disk covering 1–2% of the tokens around the object beats a readout over the whole sequence. Multi-frame quantities are readable from a single token-frame.</p>
+          </div>
+        </div>
+        <div class="column">
+          <div class="finding">
+            <span class="finding-num">03</span>
+            <h3 class="title is-5">Causally active</h3>
+            <p>Probe directions transfer across scene changes, and when injected back they flip the generated rolling direction.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scenarios -->
+  <section class="section hero is-light">
+    <div class="container">
+      <div class="has-text-centered">
+        <h2 class="title is-3">Controlled Scenarios with Exact Ground Truth</h2>
+      </div>
+      <div class="columns is-centered">
+        <div class="column is-four-fifths">
+          <p class="section-lead">
+            We render about 200 videos per scenario with the Genesis simulator, so every clip comes with exact physical labels.
+            Each video is encoded, forward-diffused to a chosen noise level, and passed once through a frozen DiT while we
+            record every layer's activations.
+          </p>
+        </div>
+      </div>
+      <div class="columns">
+        <div class="column">
+          <figure class="video-slot" data-file="scenario_rolling.mp4">
+            <video src="static/videos/scenario_rolling.mp4" poster="static/images/scene_rolling-closeup-room.png" autoplay muted loop playsinline></video>
+            <figcaption><strong>Rolling</strong> · speed, direction</figcaption>
+          </figure>
+        </div>
+        <div class="column">
+          <figure class="video-slot" data-file="scenario_collision.mp4">
+            <video src="static/videos/scenario_collision.mp4" poster="static/images/scene_elastic-collision-continuous.png" autoplay muted loop playsinline></video>
+            <figcaption><strong>Elastic collision</strong> · total momentum, pre/post phase</figcaption>
+          </figure>
+        </div>
+        <div class="column">
+          <figure class="video-slot" data-file="scenario_projectile.mp4">
+            <video src="static/videos/scenario_projectile.mp4" poster="static/images/scene_projectile-v2.png" autoplay muted loop playsinline></video>
+            <figcaption><strong>Projectile</strong> · gravity, launch angle</figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Probing and localization -->
+  <section class="section">
+    <div class="container">
+      <div class="has-text-centered">
+        <h2 class="title is-3">Probing: Computed Globally, Stored Locally</h2>
+      </div>
+      <div class="columns is-centered">
+        <div class="column is-four-fifths">
+          <p class="section-lead">
+            Ridge probes predict each simulator quantity across layers, noise levels and token subsets. The comparison against
+            a probe fit on the noised latent separates information already in the input from information the transformer builds.
+            Attention spans the whole clip, yet the physical signal concentrates on the object's own tokens: a small
+            disk-shaped region of interest around the object beats a readout over the whole sequence, and each token-frame
+            favours the physical state of its own phase.
+          </p>
+        </div>
+      </div>
+      <figure class="pipeline-figure">
+        <iframe class="fig-frame" src="static/pipeline/index.html" scrolling="no" loading="lazy"
+                title="Probing pipeline: a ground-truth clip is encoded to a latent, noised to a chosen level, passed through the frozen diffusion transformer, and a linear ridge probe reads the pooled activations out to the physical target."></iframe>
+        <figcaption>The probing pipeline. Click a phase to jump to it.</figcaption>
+      </figure>
+      <div class="columns">
+        <div class="column">
+          <figure class="video-slot" data-file="probe_readout.mp4">
+            <video src="static/videos/probe_readout.mp4" poster="static/images/projectile.png" autoplay muted loop playsinline></video>
+            <figcaption>Probe readout vs. simulator ground truth over the clip (placeholder).</figcaption>
+          </figure>
+        </div>
+        <div class="column">
+          <figure class="video-slot" data-file="noise_sweep.mp4">
+            <video src="static/videos/noise_sweep.mp4" poster="static/images/collision.png" autoplay muted loop playsinline></video>
+            <figcaption>Decodability as noise decreases: activations vs. noised-latent baseline (placeholder).</figcaption>
+          </figure>
+        </div>
+      </div>
+      <div class="columns">
+        <div class="column">
+          <figure class="video-slot" data-file="localization_rolling.mp4">
+            <video src="static/videos/localization_rolling.mp4" poster="static/images/rolling.png" autoplay muted loop playsinline></video>
+            <figcaption>Rolling · per-token signal over time</figcaption>
+          </figure>
+        </div>
+        <div class="column">
+          <figure class="video-slot" data-file="localization_collision.mp4">
+            <video src="static/videos/localization_collision.mp4" poster="static/images/collision.png" autoplay muted loop playsinline></video>
+            <figcaption>Collision · per-token signal over time</figcaption>
+          </figure>
+        </div>
+        <div class="column">
+          <figure class="video-slot" data-file="localization_projectile.mp4">
+            <video src="static/videos/localization_projectile.mp4" poster="static/images/projectile.png" autoplay muted loop playsinline></video>
+            <figcaption>Projectile · per-token signal over time</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <!-- Extrapolation: probe fitted on the source scene, scored on a swapped
+           one. Numbers (ROI arm) live in static/js/extrapolation.js. -->
+      <div class="xp" id="xp">
+        <h3 class="title is-4 has-text-centered">Extrapolation to Unseen Scenes</h3>
+        <p class="section-lead">
+          A region-of-interest probe fitted on one scene is scored on a scene that changes a single factor, with only a
+          gain and offset recalibrated on ten target videos. Drag across the clip to compare the two scenes. The ring marks a
+          probe trained on the target scene itself; the dot is the transferred probe.
+        </p>
+        <div class="xp-row">
+          <div>
+            <div class="xp-compare">
+              <video class="xp-src" src="static/videos/xp_rolling_source.mp4" muted playsinline autoplay></video>
+              <video class="xp-tgt" src="static/videos/xp_rolling_background.mp4" muted playsinline autoplay></video>
+              <span class="xp-tag">Source · probe fitted</span>
+              <span class="xp-tag is-right">Target · probe scored</span>
+              <span class="xp-divider" aria-hidden="true"></span>
+              <input type="range" class="xp-wipe" min="0" max="100" value="50" aria-label="Wipe between source and target scene">
+            </div>
+            <div class="xp-swaps" role="group" aria-label="Scene change">
+              <button type="button" data-cond="bg" aria-pressed="true">background</button>
+              <button type="button" data-cond="shp" aria-pressed="false">shape</button>
+              <button type="button" data-cond="psp" aria-pressed="false">perspective</button>
+              <button type="button" data-cond="cnt" aria-pressed="false">count</button>
+            </div>
+            <p class="xp-desc"></p>
+          </div>
+          <div class="xp-chart" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Steering -->
+  <section class="section hero is-light">
+    <div class="container">
+      <div class="has-text-centered">
+        <h2 class="title is-3">Steering: Flipping the Rolling Direction</h2>
+      </div>
+      <div class="columns is-centered">
+        <div class="column is-four-fifths">
+          <p class="section-lead">
+            We rotate each token's activation toward a direction (a probe weight vector or a class-mean contrast) by spherical
+            interpolation, only in the high-noise part of sampling. Left alone, the ball rolls left; drag the slider to raise
+            the steering strength and watch the injected direction push it right.
+          </p>
+        </div>
+      </div>
+
+      <!-- Steering explorer: one clip per strength. data-pattern gets {level}
+           replaced by each entry of data-levels ("label=file.mp4" shows label
+           but uses file.mp4 as is); data-ar is the clip aspect ratio. -->
+      <div class="steer-demo" id="steer-demo"
+           data-pattern="steer_L21_fixed_slerp_s0-10_pos{level}.mp4"
+           data-levels="0=steer_L21_fixed_slerp_s0-10_base.mp4,0.02,0.04,0.06,0.08,0.1,0.12,0.14,0.16,0.18,0.2"
+           data-ar="832 / 480">
+        <div class="steer-stage">
+          <figure class="video-slot" style="--ar: 832 / 480" data-file="steer_L21_fixed_slerp_s0-10_base.mp4">
+            <video src="static/videos/steer_L21_fixed_slerp_s0-10_base.mp4" autoplay muted loop playsinline></video>
+          </figure>
+        </div>
+
+        <div class="steer-control">
+          <label class="steer-label" for="steer-strength">
+            Steering strength <output id="steer-value" for="steer-strength">0</output>
+          </label>
+          <input type="range" id="steer-strength" class="steer-range" min="0" max="10" step="1" value="0">
+          <div class="steer-ticks" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <div class="columns is-centered">
+        <div class="column is-four-fifths">
+          <p class="section-note">
+            Both direction sources steer every model well above baseline, and the class-mean direction beats the probe on all
+            three. Open-Sora's probe direction steers least, even though its class-mean direction steers best of all (flip ratio 0.90).
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery: video carousel -->
+  <section class="hero is-small">
+    <div class="hero-body">
+      <div class="container">
+        <div class="has-text-centered">
+          <h2 class="title is-3">Gallery</h2>
+        </div>
+        <div class="columns is-centered">
+          <div class="column is-four-fifths">
+            <p class="section-lead">
+              More clips from the study: steered generations, and the scene variations (shape, background, perspective,
+              object count) the probes transfer to without refitting.
+            </p>
+          </div>
+        </div>
+        <div id="gallery-carousel" class="carousel results-carousel">
+          <div class="item">
+            <figure class="video-slot gallery-clip" style="--ar: 832 / 480" data-file="gallery/complete-transfer.mp4" tabindex="0" aria-describedby="tip-complete-transfer">
+              <video src="static/videos/gallery/complete-transfer.mp4" muted loop playsinline preload="metadata"></video>
+              <div class="gallery-tip" id="tip-complete-transfer" role="tooltip">Steering with a direction transferred across both the scene style and the camera perspective.</div>
+            </figure>
+            <h2 class="subtitle has-text-centered">Complete transfer</h2>
+          </div>
+          <div class="item">
+            <figure class="video-slot gallery-clip" style="--ar: 832 / 480" data-file="gallery/perspective-transfer.mp4" tabindex="0" aria-describedby="tip-perspective-transfer">
+              <video src="static/videos/gallery/perspective-transfer.mp4" muted loop playsinline preload="metadata"></video>
+              <div class="gallery-tip" id="tip-perspective-transfer" role="tooltip">Steering with a direction transferred between camera perspectives.</div>
+            </figure>
+            <h2 class="subtitle has-text-centered">Perspective transfer</h2>
+          </div>
+          <div class="item">
+            <figure class="video-slot gallery-clip" style="--ar: 832 / 480" data-file="gallery/style-transfer.mp4" tabindex="0" aria-describedby="tip-style-transfer">
+              <video src="static/videos/gallery/style-transfer.mp4" muted loop playsinline preload="metadata"></video>
+              <div class="gallery-tip" id="tip-style-transfer" role="tooltip">Steering with a direction transferred between scene styles (colors, background, object size, etc.).</div>
+            </figure>
+            <h2 class="subtitle has-text-centered">Style transfer</h2>
+          </div>
+          <div class="item">
+            <figure class="video-slot gallery-clip" style="--ar: 832 / 480" data-file="gallery/perspective-shift.mp4" tabindex="0" aria-describedby="tip-perspective-shift">
+              <video src="static/videos/gallery/perspective-shift.mp4" muted loop playsinline preload="metadata"></video>
+              <div class="gallery-tip" id="tip-perspective-shift" role="tooltip">Sometimes the camera shifts its perspective to accommodate the change in motion.</div>
+            </figure>
+            <h2 class="subtitle has-text-centered">Perspective shift</h2>
+          </div>
+          <div class="item">
+            <figure class="video-slot gallery-clip" style="--ar: 832 / 480" data-file="gallery/mitosis.mp4" tabindex="0" aria-describedby="tip-mitosis">
+              <video src="static/videos/gallery/mitosis.mp4" muted loop playsinline preload="metadata"></video>
+              <div class="gallery-tip" id="tip-mitosis" role="tooltip">Sometimes the ball duplicates itself, perhaps to satisfy the change in direction by spawning a second ball that rolls in the new direction.</div>
+            </figure>
+            <h2 class="subtitle has-text-centered">Mitosis</h2>
+          </div>
+          <div class="item">
+            <figure class="video-slot gallery-clip" style="--ar: 832 / 480" data-file="gallery/timidity.mp4" tabindex="0" aria-describedby="tip-timidity">
+              <video src="static/videos/gallery/timidity.mp4" muted loop playsinline preload="metadata"></video>
+              <div class="gallery-tip" id="tip-timidity" role="tooltip">Sometimes the ball turns timid and chooses not to participate.</div>
+            </figure>
+            <h2 class="subtitle has-text-centered">Timidity</h2>
+          </div>
+          <div class="item">
+            <figure class="video-slot gallery-clip" style="--ar: 832 / 480" data-file="gallery/matrix.mp4" tabindex="0" aria-describedby="tip-matrix">
+              <video src="static/videos/gallery/matrix.mp4" muted loop playsinline preload="metadata"></video>
+              <div class="gallery-tip" id="tip-matrix" role="tooltip">Sometimes the ball decides to change its scenery.</div>
+            </figure>
+            <h2 class="subtitle has-text-centered">Matrix</h2>
+          </div>
+          <div class="item">
+            <figure class="video-slot gallery-clip" style="--ar: 832 / 480" data-file="gallery/surface-surfing.mp4" tabindex="0" aria-describedby="tip-surface-surfing">
+              <video src="static/videos/gallery/surface-surfing.mp4" muted loop playsinline preload="metadata"></video>
+              <div class="gallery-tip" id="tip-surface-surfing" role="tooltip">Sometimes the ball goes surfing.</div>
+            </figure>
+            <h2 class="subtitle has-text-centered">Surface surfing</h2>
+          </div>
+          <div class="item">
+            <figure class="video-slot gallery-clip" style="--ar: 832 / 480" data-file="gallery/swimming.mp4" tabindex="0" aria-describedby="tip-swimming">
+              <video src="static/videos/gallery/swimming.mp4" muted loop playsinline preload="metadata"></video>
+              <div class="gallery-tip" id="tip-swimming" role="tooltip">Sometimes the ball goes swimming.</div>
+            </figure>
+            <h2 class="subtitle has-text-centered">Swimming</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content has-text-centered">
+            <p>
+              This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a> which was adopted from the <a href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
+              This website is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative
+              Commons Attribution-ShareAlike 4.0 International License</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

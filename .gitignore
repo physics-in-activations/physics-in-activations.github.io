@@ -1,0 +1,4 @@
+.DS_Store
+# raw design-tool exports (unreviewed; the page serves static/pipeline/)
+probing-pipeline/
+*(standalone).html
