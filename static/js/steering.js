@@ -1,10 +1,10 @@
-// Steering explorer: a strength slider over a stack of pre-rendered clips.
-// The #steer-demo element declares the clip set via data-pattern ("{level}"
-// is substituted), data-levels and data-ar. A level
+// Steering explorer: a model selector and a strength slider over a stack of
+// pre-rendered clips. Each model button declares its own clip set via
+// data-pattern ("{level}" is substituted), data-levels and data-ar. A level
 // written "label=file.mp4" shows label on the slider and uses file.mp4 as is,
 // for a clip that doesn't follow the pattern (e.g. an unsteered baseline).
 //
-// Every level is stacked in one cell and kept playing in
+// Every level of the selected model is stacked in one cell and kept playing in
 // lockstep with the visible one, so moving the slider only swaps which clip is
 // shown and never seeks or restarts. Lockstep is held by nudging playbackRate
 // rather than seeking, since seeking needs HTTP Range support from the server
@@ -22,18 +22,21 @@
   var range = root.querySelector('.steer-range');
   var out = root.querySelector('#steer-value');
   var ticks = root.querySelector('.steer-ticks');
+  var modelBtns = root.querySelectorAll('.steer-model-btn');
+
+  var model = root.querySelector('.steer-model-btn.is-active') || modelBtns[0];
   var levels = [];
   var level = 0;
   var slots = [];
   var inView = true;
 
-  function levelsOf(el) {
-    return el.dataset.levels.split(',').map(function (s) {
+  function levelsOf(btn) {
+    return btn.dataset.levels.split(',').map(function (s) {
       var parts = s.trim().split('=');
       return { label: parts[0], file: parts.length > 1 ? parts[1] : null };
     });
   }
-  function fileFor(lv) { return lv.file || root.dataset.pattern.replace('{level}', lv.label); }
+  function fileFor(btn, lv) { return lv.file || btn.dataset.pattern.replace('{level}', lv.label); }
   function videoOf(slot) { return slot.querySelector('video'); }
   function master() { return videoOf(slots[level]); }
 
@@ -97,7 +100,10 @@
   }
 
   function buildStage() {
-    levels = levelsOf(root);
+    var phase = slots.length && master().duration ? master().currentTime / master().duration : 0;
+    pauseAll();
+    levels = levelsOf(model);
+    level = Math.min(level, levels.length - 1);
     range.max = levels.length - 1;
     buildTicks();
 
@@ -105,13 +111,20 @@
     slots = levels.map(function (lv, i) {
       var fig = document.createElement('figure');
       fig.className = 'video-slot';
-      fig.style.setProperty('--ar', root.dataset.ar || '16 / 9');
-      fig.dataset.file = fileFor(lv);
+      fig.style.setProperty('--ar', model.dataset.ar || '16 / 9');
+      fig.dataset.file = fileFor(model, lv);
       fig.hidden = i !== level;
       var v = document.createElement('video');
       v.muted = true; v.loop = true; v.playsInline = true;
       v.preload = 'auto';
       v.src = 'static/videos/' + fig.dataset.file;
+      if (phase) {
+        // Carry the playback position over from the previous model, if seekable.
+        v.addEventListener('loadedmetadata', function () {
+          var tt = phase * v.duration;
+          if (canSeek(v, tt)) v.currentTime = tt;
+        }, { once: true });
+      }
       fig.appendChild(v);
       stage.appendChild(fig);
       return fig;
@@ -138,7 +151,21 @@
     if (inView && master().paused) master().play().catch(function () {});
   }
 
+  function setModel(btn) {
+    if (btn === model) return;
+    model = btn;
+    modelBtns.forEach(function (b) {
+      var on = b === btn;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    buildStage();
+  }
+
   range.addEventListener('input', function () { setLevel(parseInt(range.value, 10)); });
+  modelBtns.forEach(function (b) {
+    b.addEventListener('click', function () { setModel(b); });
+  });
 
   // Ten clips decoding at once is fine on screen, wasteful off it.
   if ('IntersectionObserver' in window) {
