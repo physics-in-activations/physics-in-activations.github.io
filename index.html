@@ -232,6 +232,18 @@
                 title="Probing pipeline: a ground-truth clip is encoded to a latent, noised to a chosen level, passed through the frozen diffusion transformer, and a linear ridge probe reads the pooled activations out to the physical target."></iframe>
         <figcaption>The probing pipeline. Click a phase to jump to it.</figcaption>
       </figure>
+      <ol class="pipe-steps">
+        <li><strong>Ground truth.</strong> A simulated clip whose every frame comes with exact physical labels: velocity,
+          momentum, gravity, angles.</li>
+        <li><strong>Encode.</strong> The model's own VAE compresses the clip into the latent video z<sub>0</sub>, in space and
+          in time (about four frames per latent frame).</li>
+        <li><strong>Forward noising.</strong> The latent is mixed with Gaussian noise to a chosen level. We report it as SNR in dB,
+          from −40 (pure noise) to +16 (nearly clean), so levels are comparable across models.</li>
+        <li><strong>Capture activations.</strong> One forward pass of the frozen DiT, conditioned on the clean first frame as
+          anchor; we record the residual stream at its transformer blocks. No video is generated.</li>
+        <li><strong>Linear probe.</strong> Tokens in a small disk around the object are averaged, and a ridge regression maps
+          them to the target. We score R² with 5-fold cross-validation split by video.</li>
+      </ol>
       <!-- Main probing result: inputs + baselines (top), R^2 vs. noise per
            target (bottom). Numbers live in static/js/probing.js. -->
       <div class="pr" id="probe-results">

@@ -6,7 +6,7 @@
 .overview-figure { margin: 0; }
 .overview-figure img { display: block; width: 100%; height: auto; }
 .fig-frame { display: block; width: 100%; border: 0; }
-.pipeline-figure { margin: 0 0 2rem; }
+.pipeline-figure { margin: 0 0 1.25rem; }
 .pipeline-figure figcaption { text-align: center; color: #6b7488; font-size: .9rem; margin-top: .5rem; }
 
 .section-lead { color: var(--text-secondary); font-size: 1.05rem; text-align: center; margin-bottom: 1.5rem; }
@@ -179,3 +179,11 @@
 @media screen and (max-width: 480px) {
   .pr-grid { grid-template-columns: 1fr; }
 }
+
+/* ---------- probing pipeline: step explanations under the animation */
+.pipe-steps { list-style: none; counter-reset: step; display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin: 0 0 3rem; padding: 0; }
+.pipe-steps li { counter-increment: step; font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary); }
+.pipe-steps li::before { content: counter(step); display: block; font: 600 1.1rem 'SF Mono', 'Monaco', 'Roboto Mono', monospace; color: var(--primary-color); }
+.pipe-steps strong { color: var(--text-primary); }
+@media screen and (max-width: 1024px) { .pipe-steps { grid-template-columns: repeat(2, 1fr); } }
+@media screen and (max-width: 480px) { .pipe-steps { grid-template-columns: 1fr; } }
