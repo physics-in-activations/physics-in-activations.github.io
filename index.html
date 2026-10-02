@@ -354,22 +354,54 @@
            entry of data-levels; "label=file.mp4" shows label but uses
            file.mp4 as is) and data-ar (clip aspect ratio). -->
       <div class="steer-demo" id="steer-demo">
-        <div class="steer-models" role="group" aria-label="Model">
-          <button type="button" class="steer-model-btn is-active" aria-pressed="true"
-                  data-pattern="steer_L21_fixed_slerp_s0-10_pos{level}.mp4"
-                  data-levels="0=steer_L21_fixed_slerp_s0-10_base.mp4,0.02,0.04,0.06,0.08,0.1,0.12,0.14,0.16,0.18,0.2"
-                  data-ar="832 / 480">Wan 2.1 <small>14B</small></button>
-          <button type="button" class="steer-model-btn" aria-pressed="false"
-                  data-pattern="steer_cog_{level}.mp4" data-levels="0,0.25,0.5,0.75,1"
-                  data-ar="1 / 1">CogVideoX 1.5 <small>5B</small></button>
-          <button type="button" class="steer-model-btn" aria-pressed="false"
-                  data-pattern="steer_opensora_{level}.mp4" data-levels="0,0.25,0.5,0.75,1"
-                  data-ar="1 / 1">Open-Sora 2.0 <small>11B</small></button>
+        <div class="xp-swaps steer-models" role="group" aria-label="Model">
+          <button type="button" class="steer-model-btn is-active" data-model="wan" aria-pressed="true"
+                  data-pattern="steering/wan/steer_L21_fixed_slerp_{level}.mp4"
+                  data-levels="0=steering/wan/steer_L21_fixed_slerp_0.00.mp4,
+                               0.02=steering/wan/steer_L21_fixed_slerp_0.02.mp4,
+                               0.04=steering/wan/steer_L21_fixed_slerp_0.04.mp4,
+                               0.06=steering/wan/steer_L21_fixed_slerp_0.06.mp4,
+                               0.08=steering/wan/steer_L21_fixed_slerp_0.08.mp4,
+                               0.1=steering/wan/steer_L21_fixed_slerp_0.10.mp4,
+                               0.12=steering/wan/steer_L21_fixed_slerp_0.12.mp4,
+                               0.14=steering/wan/steer_L21_fixed_slerp_0.14.mp4,
+                               0.16=steering/wan/steer_L21_fixed_slerp_0.16.mp4,
+                               0.18=steering/wan/steer_L21_fixed_slerp_0.18.mp4,
+                               0.2=steering/wan/steer_L21_fixed_slerp_0.20.mp4"
+                  data-ar="832 / 480">Wan 2.1</button>
+          <button type="button" class="steer-model-btn" data-model="cog" aria-pressed="false"
+                  data-pattern="steering/cogvideox/steer_L3_fixed_slerp_{level}.mp4"
+                  data-levels="0=steering/cogvideox/steer_L3_fixed_slerp_0.00.mp4,
+                               0.02=steering/cogvideox/steer_L3_fixed_slerp_0.02.mp4,
+                               0.04=steering/cogvideox/steer_L3_fixed_slerp_0.04.mp4,
+                               0.06=steering/cogvideox/steer_L3_fixed_slerp_0.06.mp4,
+                               0.08=steering/cogvideox/steer_L3_fixed_slerp_0.08.mp4,
+                               0.1=steering/cogvideox/steer_L3_fixed_slerp_0.10.mp4,
+                               0.12=steering/cogvideox/steer_L3_fixed_slerp_0.12.mp4,
+                               0.14=steering/cogvideox/steer_L3_fixed_slerp_0.14.mp4,
+                               0.16=steering/cogvideox/steer_L3_fixed_slerp_0.16.mp4,
+                               0.18=steering/cogvideox/steer_L3_fixed_slerp_0.18.mp4,
+                               0.2=steering/cogvideox/steer_L3_fixed_slerp_0.20.mp4"
+                  data-ar="1360 / 768">CogVideoX-1.5</button>
+          <button type="button" class="steer-model-btn" data-model="sora" aria-pressed="false"
+                  data-pattern="steering/opensora/steer_L16_fixed_slerp_{level}.mp4"
+                  data-levels="0=steering/opensora/steer_L16_fixed_slerp_0.00.mp4,
+                               0.02=steering/opensora/steer_L16_fixed_slerp_0.02.mp4,
+                               0.04=steering/opensora/steer_L16_fixed_slerp_0.04.mp4,
+                               0.06=steering/opensora/steer_L16_fixed_slerp_0.06.mp4,
+                               0.08=steering/opensora/steer_L16_fixed_slerp_0.08.mp4,
+                               0.1=steering/opensora/steer_L16_fixed_slerp_0.10.mp4,
+                               0.12=steering/opensora/steer_L16_fixed_slerp_0.12.mp4,
+                               0.14=steering/opensora/steer_L16_fixed_slerp_0.14.mp4,
+                               0.16=steering/opensora/steer_L16_fixed_slerp_0.16.mp4,
+                               0.18=steering/opensora/steer_L16_fixed_slerp_0.18.mp4,
+                               0.2=steering/opensora/steer_L16_fixed_slerp_0.20.mp4"
+                  data-ar="832 / 480">Open-Sora 2.0</button>
         </div>
 
         <div class="steer-stage">
-          <figure class="video-slot" style="--ar: 832 / 480" data-file="steer_L21_fixed_slerp_s0-10_base.mp4">
-            <video src="static/videos/steer_L21_fixed_slerp_s0-10_base.mp4" autoplay muted loop playsinline></video>
+          <figure class="video-slot" style="--ar: 832 / 480" data-file="steering/wan/steer_L21_fixed_slerp_0.00.mp4">
+            <video src="static/videos/steering/wan/steer_L21_fixed_slerp_0.00.mp4" autoplay muted loop playsinline></video>
           </figure>
         </div>
 

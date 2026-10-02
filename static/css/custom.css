@@ -1,5 +1,8 @@
 /* Page-specific additions on top of the template's index.css */
 
+/* per-model colours, shared by the probing results and the steering explorer */
+:root { --m-wan: #008080; --m-cog: #ff8383; --m-sora: #8768e6; }
+
 .publication-title { margin-bottom: 1rem !important; }
 .publication-subtitle { color: var(--text-secondary) !important; font-weight: 500; margin-top: 0 !important; margin-bottom: 1.25rem !important; }
 .teaser .subtitle { margin-top: 1.5rem; font-size: 1rem; line-height: 1.6; text-align: justify !important; color: var(--text-secondary); }
@@ -37,20 +40,11 @@
 
 /* ---------- steering explorer: model selector + strength slider */
 .steer-demo { max-width: 640px; margin: 0 auto; }
-.steer-models {
-  display: flex; gap: 4px; padding: 4px; margin-bottom: 1.25rem;
-  background: var(--background-accent); border: 1px solid var(--border-color); border-radius: var(--border-radius);
-}
-.steer-model-btn {
-  flex: 1 1 0; min-width: 0; padding: 0.5rem 0.4rem; border: 0; border-radius: 9px; cursor: pointer;
-  background: transparent; color: var(--text-secondary); font-family: inherit; font-weight: 600; font-size: 0.9rem; line-height: 1.2;
-  transition: var(--transition);
-}
-.steer-model-btn small { display: block; font-weight: 400; font-size: 0.75rem; }
-.steer-model-btn:hover { color: var(--text-primary); }
-.steer-model-btn.is-active { background: var(--background-primary); color: var(--text-primary); box-shadow: var(--shadow-sm); }
-.steer-model-btn:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 1px; }
-
+/* model pills share .xp-swaps with the other panels; the active one takes its model colour */
+.steer-models { margin: 0 0 1.25rem; }
+.steer-models button[aria-pressed="true"][data-model="wan"] { background: var(--m-wan); border-color: var(--m-wan); }
+.steer-models button[aria-pressed="true"][data-model="cog"] { background: var(--m-cog); border-color: var(--m-cog); }
+.steer-models button[aria-pressed="true"][data-model="sora"] { background: var(--m-sora); border-color: var(--m-sora); }
 .steer-stage { display: grid; }
 .steer-stage > .video-slot { grid-area: 1 / 1; }
 .steer-stage > .video-slot[hidden] { display: block; visibility: hidden; }
@@ -137,7 +131,7 @@
 .xp-head .xp-val { font-weight: 600; white-space: nowrap; color: var(--text-primary); }
 
 /* ---------- main probing result: inputs, noise slider, R^2 vs. noise */
-.pr { --m-wan: #008080; --m-cog: #ff8383; --m-sora: #8768e6; --pr-c: var(--m-wan); margin-top: 1rem; margin-bottom: 3rem; }
+.pr { --pr-c: var(--m-wan); margin-top: 1rem; margin-bottom: 3rem; }
 .pr-inputs { display: flex; align-items: center; justify-content: center; gap: 0.75rem; max-width: 900px; margin: 0 auto; }
 .pr-tile { margin: 0; flex: 1 1 0; min-width: 0; }
 .pr-tile video, .pr-tile img { display: block; width: 100%; aspect-ratio: 832 / 480; object-fit: cover; border-radius: var(--border-radius); box-shadow: var(--shadow-md); background: var(--background-accent); }
