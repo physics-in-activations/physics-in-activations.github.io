@@ -9,9 +9,8 @@
   if (!root) return;
 
   var DB = [-40, -20, -8, 0, 8, 16];
-  // Pipeline clips named by timestep; sigma ~ t/1000 matches the six levels
-  // (sigma = 0.990/0.909/0.715/0.500/0.285/0.137).
-  var NOISE_CLIP = ['t1000', 't900', 't700', 't500', 't300', 't100'];
+  // Latent clips per model (rolling room, clip 00000): z0 and z_t at each of
+  // the six levels, rendered with one PCA colour basis per model fitted on z0.
   var MODELS = { wan: 'Wan 2.1', cog: 'CogVideoX-1.5', sora: 'Open-Sora 2.0' };
   var PANELS = [
     ['roll_speed', 'Rolling · speed'],
@@ -42,6 +41,7 @@
   var model = 'wan', level = 3;
   var grid = root.querySelector('.pr-grid');
   var noiseVid = root.querySelector('.pr-noised');
+  var cleanVid = root.querySelector('.pr-clean');
   var range = root.querySelector('.pr-range');
   var out = root.querySelector('.pr-db');
   var buttons = root.querySelectorAll('.pr-models button');
@@ -72,15 +72,24 @@
     }).join('');
   }
 
-  function setLevel(i) {
-    level = i;
-    out.textContent = (DB[i] > 0 ? '+' : DB[i] < 0 ? '−' : '') + Math.abs(DB[i]) + ' dB';
-    var t = noiseVid.currentTime;
-    noiseVid.src = 'static/pipeline/videos/noise_' + NOISE_CLIP[i] + '.mp4';
-    noiseVid.currentTime = t;
-    noiseVid.play().catch(function () {});
+  function dbText(v) { return (v > 0 ? '+' : v < 0 ? '\u2212' : '') + Math.abs(v) + ' dB'; }
+
+  // Swap a clip's source but keep its playback position, so moving the slider
+  // or switching model doesn't restart the loop.
+  function swap(v, src) {
+    var t = v.currentTime;
+    v.src = src;
+    v.currentTime = t;
+    v.play().catch(function () {});
+  }
+
+  function update() {
+    out.textContent = dbText(DB[level]);
+    swap(noiseVid, 'static/videos/latents/' + model + '_zt' + level + '.mp4');
     draw();
   }
+
+  function setLevel(i) { level = i; update(); }
 
   range.addEventListener('input', function () { setLevel(+range.value); });
   buttons.forEach(function (b) {
@@ -88,7 +97,8 @@
       model = b.dataset.model;
       root.style.setProperty('--pr-c', 'var(--m-' + model + ')');
       buttons.forEach(function (o) { o.setAttribute('aria-pressed', o === b); });
-      draw();
+      swap(cleanVid, 'static/videos/latents/' + model + '_z0.mp4');
+      update();
     });
   });
   setLevel(+range.value);
