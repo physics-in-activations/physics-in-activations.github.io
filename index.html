@@ -53,9 +53,9 @@
   <script defer src="static/js/bulma-carousel.min.js"></script>
   <script defer src="static/js/bulma-slider.min.js"></script>
   <script defer src="static/js/index.js"></script>
-  <script defer src="static/js/placeholders.js"></script>
   <script defer src="static/js/steering.js"></script>
   <script defer src="static/js/extrapolation.js"></script>
+  <script defer src="static/js/probing.js"></script>
 </head>
 <body>
 
@@ -232,39 +232,54 @@
                 title="Probing pipeline: a ground-truth clip is encoded to a latent, noised to a chosen level, passed through the frozen diffusion transformer, and a linear ridge probe reads the pooled activations out to the physical target."></iframe>
         <figcaption>The probing pipeline. Click a phase to jump to it.</figcaption>
       </figure>
-      <div class="columns">
-        <div class="column">
-          <figure class="video-slot" data-file="probe_readout.mp4">
-            <video src="static/videos/probe_readout.mp4" poster="static/images/projectile.png" autoplay muted loop playsinline></video>
-            <figcaption>Probe readout vs. simulator ground truth over the clip (placeholder).</figcaption>
+      <!-- Main probing result: inputs + baselines (top), R^2 vs. noise per
+           target (bottom). Numbers live in static/js/probing.js. -->
+      <div class="pr" id="probe-results">
+        <h3 class="title is-4 has-text-centered">Physical Quantities Are Linearly Decodable</h3>
+        <p class="section-lead">
+          The model's input already carries some physics, so we probe it too, masked to the same region of interest.
+          <strong>z<sub>tc</sub></strong> is exactly what the DiT receives: the noised latent with the clean anchor image.
+          <strong>z<sub>0</sub></strong> is the clean latent, a reference no noise level can beat. Slide the noise level to
+          see how much each input still shows and what the probes recover from it.
+        </p>
+        <div class="pr-inputs">
+          <figure class="pr-tile">
+            <video src="static/pipeline/videos/latent.mp4" muted loop playsinline autoplay></video>
+            <figcaption><strong>z<sub>0</sub></strong> · clean latent</figcaption>
+          </figure>
+          <span class="pr-op" aria-hidden="true">+ noise →</span>
+          <figure class="pr-tile is-ztc">
+            <video class="pr-noised" muted loop playsinline autoplay></video>
+            <figcaption><strong>z<sub>t</sub></strong> · noised latent</figcaption>
+          </figure>
+          <span class="pr-op" aria-hidden="true">+</span>
+          <figure class="pr-tile is-ztc">
+            <img src="static/images/anchor_frame.png" alt="Anchor image: the clip's first frame">
+            <figcaption><strong>z<sub>c</sub></strong> · anchor image</figcaption>
           </figure>
         </div>
-        <div class="column">
-          <figure class="video-slot" data-file="noise_sweep.mp4">
-            <video src="static/videos/noise_sweep.mp4" poster="static/images/collision.png" autoplay muted loop playsinline></video>
-            <figcaption>Decodability as noise decreases: activations vs. noised-latent baseline (placeholder).</figcaption>
-          </figure>
+        <p class="pr-brace"><span>z<sub>tc</sub> = [z<sub>t</sub> | z<sub>c</sub>], the DiT's actual input</span></p>
+        <div class="steer-control pr-control">
+          <label class="steer-label" for="pr-noise">Input noise (SNR) <output class="pr-db" for="pr-noise"></output></label>
+          <input type="range" id="pr-noise" class="steer-range pr-range" min="0" max="5" step="1" value="3">
+          <div class="pr-scale" aria-hidden="true"><span>noisier</span><span>cleaner</span></div>
         </div>
-      </div>
-      <div class="columns">
-        <div class="column">
-          <figure class="video-slot" data-file="localization_rolling.mp4">
-            <video src="static/videos/localization_rolling.mp4" poster="static/images/rolling.png" autoplay muted loop playsinline></video>
-            <figcaption>Rolling · per-token signal over time</figcaption>
-          </figure>
+        <div class="xp-swaps pr-models" role="group" aria-label="Model">
+          <button type="button" data-model="wan" aria-pressed="true">Wan 2.1</button>
+          <button type="button" data-model="cog" aria-pressed="false">CogVideoX-1.5</button>
+          <button type="button" data-model="sora" aria-pressed="false">Open-Sora 2.0</button>
         </div>
-        <div class="column">
-          <figure class="video-slot" data-file="localization_collision.mp4">
-            <video src="static/videos/localization_collision.mp4" poster="static/images/collision.png" autoplay muted loop playsinline></video>
-            <figcaption>Collision · per-token signal over time</figcaption>
-          </figure>
+        <div class="pr-legend">
+          <span><i class="pr-l-dit"></i>DiT activations (mean over blocks, band = min–max)</span>
+          <span><i class="pr-l-ztc"></i>z<sub>tc</sub> input baseline</span>
+          <span><i class="pr-l-z0"></i>z<sub>0</sub> clean latent</span>
         </div>
-        <div class="column">
-          <figure class="video-slot" data-file="localization_projectile.mp4">
-            <video src="static/videos/localization_projectile.mp4" poster="static/images/projectile.png" autoplay muted loop playsinline></video>
-            <figcaption>Projectile · per-token signal over time</figcaption>
-          </figure>
-        </div>
+        <div class="pr-grid"></div>
+        <p class="section-note">
+          Probe R² (200 videos, 5-fold video-level CV) against input noise. At −40 dB the input is pure noise and z<sub>tc</sub>
+          sits at chance, yet the DiT already decodes rolling kinematics. Gravity, launch angle and approach angle are barely
+          in z<sub>0</sub> at all, so the DiT computes them rather than reading them off its input.
+        </p>
       </div>
 
       <!-- Extrapolation: probe fitted on the source scene, scored on a swapped

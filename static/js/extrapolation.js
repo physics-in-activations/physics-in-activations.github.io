@@ -31,7 +31,7 @@
   };
 
   function pct(v) { return Math.max(0, Math.min(1, v)) * 100 + '%'; }
-  function fmt(v) { return v.toFixed(2).replace('-', '−'); }
+  function fmt(v) { return (Math.round(v * 100) / 100 || 0).toFixed(2).replace('-', '−'); }
 
   function render(el, data) {
     var html = '<div class="xp-legend">' + MODELS.map(function (m, i) {
@@ -68,7 +68,7 @@
   // ends instead of looping each on its own, so they never drift apart.
   src.addEventListener('ended', function () {
     src.currentTime = tgt.currentTime = 0;
-    src.play(); tgt.play();
+    src.play().catch(function () {}); tgt.play().catch(function () {});
   });
 
   function select(key) {
@@ -77,7 +77,7 @@
     if (!src.src.endsWith('xp_' + c.src + '.mp4')) src.src = 'static/videos/xp_' + c.src + '.mp4';
     tgt.src = 'static/videos/xp_' + c.tgt + '.mp4';
     src.currentTime = 0;
-    src.play(); tgt.play();
+    src.play().catch(function () {}); tgt.play().catch(function () {});
     root.querySelector('.xp-desc').textContent = c.desc;
     render(root.querySelector('.xp-chart'), c.data);
   }
