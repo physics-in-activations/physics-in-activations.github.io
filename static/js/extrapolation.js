@@ -1,4 +1,4 @@
-// Extrapolation panel: source and target clip under one wipe slider, plus the
+// Extrapolation panel: target clip with the source as an inset, plus the
 // transfer chart for the selected scene change.
 // Per quantity and model: [tgt CV, recal.] R^2 of the ROI arm, from the paper's
 // appendix table (generalization.dat).
@@ -8,12 +8,12 @@
 
   var MODELS = ['Wan 2.1', 'CogVideoX-1.5', 'Open-Sora 2.0'];
   var CONDS = {
-    bg: { src: 'rolling_source', tgt: 'rolling_background', desc: 'Rolling: parquet floor → checkerboard.',
+    bg: { src: 'rolling_source', tgt: 'rolling_background', inset: 'right', desc: 'Rolling: parquet floor → checkerboard.',
       data: [['dir-x', [0.99, 0.97], [0.99, 0.94], [0.89, -0.03]],
         ['dir-y', [0.99, 0.98], [0.99, 0.92], [0.88, 0.00]],
         ['speed', [0.99, 0.88], [0.99, 0.89], [0.93, 0.06]],
         ['momentum', [0.93, 0.63], [0.89, 0.48], [0.93, 0.03]]] },
-    shp: { src: 'rolling_source', tgt: 'rolling_shape', desc: 'Rolling: ball → soda can.',
+    shp: { src: 'rolling_source', tgt: 'rolling_shape', inset: 'right', desc: 'Rolling: ball → soda can.',
       data: [['dir-x', [1.00, 0.93], [1.00, 0.93], [0.98, 0.49]],
         ['dir-y', [1.00, 0.87], [1.00, 0.94], [0.99, 0.79]],
         ['speed', [0.99, 0.94], [0.99, 0.93], [0.98, 0.72]],
@@ -23,7 +23,7 @@
         ['dir-y', [0.96, 0.84], [0.95, 0.45], [0.78, 0.17]],
         ['speed', [0.91, 0.54], [0.92, 0.47], [0.55, 0.05]],
         ['momentum', [0.78, 0.46], [0.79, 0.40], [0.66, 0.05]]] },
-    cnt: { src: 'collision_source', tgt: 'collision_count', inset: true, desc: 'Elastic collision: 2 → 5 balls.',
+    cnt: { src: 'collision_source', tgt: 'collision_count', desc: 'Elastic collision: 2 → 5 balls.',
       data: [['dir-x', [0.98, 0.98], [0.98, 0.96], [0.62, 0.30]],
         ['dir-y', [0.98, 0.97], [0.98, 0.95], [0.70, 0.45]],
         ['speed', [0.96, 0.93], [0.96, 0.92], [0.60, 0.32]],
@@ -57,12 +57,7 @@
 
   var compare = root.querySelector('.xp-compare');
   var src = root.querySelector('.xp-src'), tgt = root.querySelector('.xp-tgt');
-  var wipe = root.querySelector('.xp-wipe');
   var buttons = root.querySelectorAll('.xp-swaps button');
-
-  function setWipe() { compare.style.setProperty('--wipe', wipe.value + '%'); }
-  wipe.addEventListener('input', setWipe);
-  setWipe();
 
   // Both clips have the same 81 frames; restart them together when the source
   // ends instead of looping each on its own, so they never drift apart.
@@ -74,10 +69,7 @@
   function select(key) {
     var c = CONDS[key];
     buttons.forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.cond === key); });
-    // A wipe only makes sense when the two clips line up pixel for pixel; a new
-    // camera or ball count gets the source as a picture-in-picture instead.
-    compare.classList.toggle('is-inset', !!c.inset);
-    compare.classList.toggle('is-inset-right', c.inset === 'right');   // clear of the frontal view's ball
+    compare.classList.toggle('is-inset-right', c.inset === 'right');   // rolling: clear of the ball's path
     if (!src.src.endsWith('xp_' + c.src + '.mp4')) src.src = 'static/videos/xp_' + c.src + '.mp4';
     tgt.src = 'static/videos/xp_' + c.tgt + '.mp4';
     src.currentTime = 0;

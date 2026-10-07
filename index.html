@@ -314,7 +314,7 @@
         <h3 class="title is-4 has-text-centered">Extrapolation to Unseen Scenes</h3>
         <p class="section-lead">
           A region-of-interest probe fitted on one scene is scored on a scene that changes a single factor, with only a
-          gain and offset recalibrated on ten target videos. Drag across the clip to compare the two scenes; for a new camera or ball count the source plays as an inset. The ring marks a
+          gain and offset recalibrated on ten target videos. The source scene plays as an inset. The ring marks a
           probe trained on the target scene itself; the dot is the transferred probe.
         </p>
         <div class="xp-row">
@@ -324,8 +324,6 @@
               <video class="xp-tgt" src="static/videos/xp_rolling_background.mp4" muted playsinline autoplay></video>
               <span class="xp-tag">Source · probe fitted</span>
               <span class="xp-tag is-right">Target · probe scored</span>
-              <span class="xp-divider" aria-hidden="true"></span>
-              <input type="range" class="xp-wipe" min="0" max="100" value="50" aria-label="Wipe between source and target scene">
             </div>
             <div class="xp-swaps" role="group" aria-label="Scene change">
               <button type="button" data-cond="bg" aria-pressed="true">background</button>
