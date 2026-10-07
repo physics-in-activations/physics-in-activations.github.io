@@ -18,12 +18,12 @@
         ['dir-y', [1.00, 0.87], [1.00, 0.94], [0.99, 0.79]],
         ['speed', [0.99, 0.94], [0.99, 0.93], [0.98, 0.72]],
         ['momentum', [0.99, 0.83], [0.99, 0.57], [0.98, 0.58]]] },
-    psp: { src: 'rolling_source', tgt: 'rolling_perspective', desc: 'Rolling: top-down camera → frontal view.',
+    psp: { src: 'rolling_source', tgt: 'rolling_perspective', inset: 'right', desc: 'Rolling: top-down camera → frontal view.',
       data: [['dir-x', [0.97, 0.91], [0.97, 0.91], [0.83, 0.13]],
         ['dir-y', [0.96, 0.84], [0.95, 0.45], [0.78, 0.17]],
         ['speed', [0.91, 0.54], [0.92, 0.47], [0.55, 0.05]],
         ['momentum', [0.78, 0.46], [0.79, 0.40], [0.66, 0.05]]] },
-    cnt: { src: 'collision_source', tgt: 'collision_count', desc: 'Elastic collision: 2 → 5 balls.',
+    cnt: { src: 'collision_source', tgt: 'collision_count', inset: true, desc: 'Elastic collision: 2 → 5 balls.',
       data: [['dir-x', [0.98, 0.98], [0.98, 0.96], [0.62, 0.30]],
         ['dir-y', [0.98, 0.97], [0.98, 0.95], [0.70, 0.45]],
         ['speed', [0.96, 0.93], [0.96, 0.92], [0.60, 0.32]],
@@ -74,6 +74,10 @@
   function select(key) {
     var c = CONDS[key];
     buttons.forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.cond === key); });
+    // A wipe only makes sense when the two clips line up pixel for pixel; a new
+    // camera or ball count gets the source as a picture-in-picture instead.
+    compare.classList.toggle('is-inset', !!c.inset);
+    compare.classList.toggle('is-inset-right', c.inset === 'right');   // clear of the frontal view's ball
     if (!src.src.endsWith('xp_' + c.src + '.mp4')) src.src = 'static/videos/xp_' + c.src + '.mp4';
     tgt.src = 'static/videos/xp_' + c.tgt + '.mp4';
     src.currentTime = 0;
