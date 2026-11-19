@@ -56,6 +56,7 @@
   <script defer src="static/js/steering.js"></script>
   <script defer src="static/js/extrapolation.js"></script>
   <script defer src="static/js/probing.js"></script>
+  <script defer src="static/js/beta.js"></script>
 </head>
 <body>
 
@@ -426,6 +427,72 @@
           <p class="section-note">
             The probe direction flips the rolling direction in 45% / 35% / 31% of clips (Wan / CogVideoX / Open-Sora),
             compared with 30% / 2% / 4% when the text prompt asks for the opposite direction.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Steering vs readout: probing-weight slider (static/js/beta.js) -->
+  <section class="section beta-demo" id="beta-demo">
+    <div class="container">
+      <div class="has-text-centered">
+        <h2 class="title is-3">One Direction, Two Jobs: Steering vs Readout</h2>
+      </div>
+      <div class="columns is-centered">
+        <div class="column is-four-fifths">
+          <p class="section-lead">
+            A direction can be trained to steer the ball, to read its motion, or both. The probing weight&nbsp;&beta; trades
+            the two: at &beta;&nbsp;=&nbsp;0 it only steers, at &beta;&nbsp;=&nbsp;1 it only reads. The dashed outline is where
+            the direction's linear readout predicts the ball will end. Drag &beta; and watch whether the ball both turns and
+            lands inside it.
+          </p>
+        </div>
+      </div>
+
+      <div class="xp-swaps beta-seeds" role="group" aria-label="Seed"></div>
+
+      <div class="beta-grid">
+        <div>
+          <div class="beta-stage">
+            <img class="beta-im-a" alt="Steered generation, last frame with the ball overlaid from earlier frames">
+            <img class="beta-im-b" alt="">
+            <svg viewBox="0 0 416 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <defs><marker id="beta-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#fff"/></marker></defs>
+              <path class="beta-path" marker-end="url(#beta-ah)"/>
+              <circle class="beta-start" r="5"/>
+              <ellipse class="beta-outline"/>
+              <text class="beta-lab" text-anchor="middle">readout: predicted end</text>
+              <line class="beta-xh"/><line class="beta-xh"/>
+            </svg>
+          </div>
+          <div class="beta-legend">
+            <span><svg viewBox="0 0 18 14"><ellipse cx="9" cy="7" rx="7.5" ry="5.5" fill="rgb(37 99 235 / .12)" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="3 2"/></svg>readout's predicted end</span>
+            <span><svg viewBox="0 0 18 14"><line x1="4" y1="3" x2="14" y2="11" stroke="#ca8a04" stroke-width="2"/><line x1="14" y1="3" x2="4" y2="11" stroke="#ca8a04" stroke-width="2"/></svg>actual end</span>
+            <span><svg viewBox="0 0 18 14"><circle cx="9" cy="7" r="4" fill="none" stroke="#64748b" stroke-width="1.5"/></svg>start</span>
+          </div>
+        </div>
+
+        <div class="beta-panel">
+          <label class="beta-head" for="beta-range">Probing weight &beta; <output class="beta-value" for="beta-range">0.00</output></label>
+          <input type="range" id="beta-range" class="beta-range" min="0" max="1" step="0.01" value="0">
+          <div class="beta-ends"><span class="s">steer only</span><span>joint</span><span class="r">read only</span></div>
+          <div class="beta-chips"></div>
+          <div class="beta-metrics">
+            <div class="beta-metric" style="--c: var(--c-steer)"><div class="k">turned &amp; intact<br>(30 test seeds)</div><div class="v beta-ti"></div></div>
+            <div class="beta-metric" style="--c: var(--c-read)"><div class="k">end inside readout outline<br>(30 test seeds)</div><div class="v beta-in"></div></div>
+          </div>
+          <div class="beta-mini"><svg viewBox="0 0 300 130" aria-label="Both rates over the probing weight"></svg></div>
+          <div class="beta-verdict"></div>
+        </div>
+      </div>
+
+      <div class="columns is-centered">
+        <div class="column is-four-fifths">
+          <p class="section-note">
+            Wan&nbsp;2.1, block&nbsp;21. The images are generations steered by the steering-only, joint and ridge-probe
+            directions, shown at &beta;&nbsp;=&nbsp;0, 0.5 and 1; positions in between blend the two nearest.
+            Illustrative: the outlines and the rates are placeholders.
           </p>
         </div>
       </div>
