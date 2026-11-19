@@ -6,7 +6,7 @@
 
   <!-- Primary Meta Tags -->
   <meta name="title" content="Does Physics Live in the Activations?">
-  <meta name="description" content="Linear probes recover speed, direction, momentum and gravity from video diffusion transformer activations, localized at the object's tokens, and the probe directions steer generation.">
+  <meta name="description" content="Linear probes decode speed, momentum and gravity from five video diffusion transformers, but probe directions rarely steer the generated motion: decodability and control are separate properties.">
   <meta name="keywords" content="video diffusion, world models, interpretability, linear probing, steering, physics, DiT">
   <meta name="robots" content="index, follow">
   <meta name="language" content="English">
@@ -14,13 +14,13 @@
   <!-- Open Graph / Twitter -->
   <meta property="og:type" content="article">
   <meta property="og:title" content="Does Physics Live in the Activations?">
-  <meta property="og:description" content="Localizing physical quantities in video diffusion models.">
-  <meta property="og:url" content="https://video-model-physics.github.io/">
-  <meta property="og:image" content="https://video-model-physics.github.io/static/images/overview.png">
+  <meta property="og:description" content="The decodability-causality mismatch in video diffusion transformers.">
+  <meta property="og:url" content="https://physics-in-activations.github.io/">
+  <meta property="og:image" content="https://physics-in-activations.github.io/static/images/overview_cvpr.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Does Physics Live in the Activations?">
-  <meta name="twitter:description" content="Localizing physical quantities in video diffusion models.">
-  <meta name="twitter:image" content="https://video-model-physics.github.io/static/images/overview.png">
+  <meta name="twitter:description" content="The decodability-causality mismatch in video diffusion transformers.">
+  <meta name="twitter:image" content="https://physics-in-activations.github.io/static/images/overview_cvpr.png">
 
   <meta name="theme-color" content="#22A599">
 
@@ -28,12 +28,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://ajax.googleapis.com">
 
-  <title>Does Physics Live in the Activations? Localizing Physical Quantities in Video Diffusion Models</title>
+  <title>Does Physics Live in the Activations? The Decodability-Causality Mismatch in Video Diffusion Transformers</title>
 
   <!-- Critical CSS - Load synchronously -->
   <link rel="stylesheet" href="static/css/bulma.min.css">
   <link rel="stylesheet" href="static/css/index.css">
-  <link rel="stylesheet" href="static/css/custom.css?v=2">
+  <link rel="stylesheet" href="static/css/custom.css?v=3">
 
   <!-- Non-critical CSS - Load asynchronously -->
   <link rel="preload" href="static/css/bulma-carousel.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -54,8 +54,9 @@
   <script defer src="static/js/bulma-slider.min.js"></script>
   <script defer src="static/js/index.js"></script>
   <script defer src="static/js/steering.js"></script>
-  <script defer src="static/js/extrapolation.js"></script>
+  <script defer src="static/js/occlusion.js"></script>
   <script defer src="static/js/probing.js"></script>
+  <script defer src="static/js/extrapolation.js"></script>
   <script defer src="static/js/beta.js?v=2"></script>
 </head>
 <body>
@@ -74,7 +75,7 @@
         <div class="columns is-centered">
           <div class="column has-text-centered">
             <h1 class="title is-1 publication-title">Does Physics Live in the Activations?</h1>
-            <h2 class="subtitle is-4 publication-subtitle">Localizing Physical Quantities in Video Diffusion Models</h2>
+            <h2 class="subtitle is-4 publication-subtitle">The Decodability-Causality Mismatch in Video Diffusion Transformers</h2>
             <!-- Placeholders: add href="..." to each link once it exists. -->
             <div class="publication-links">
               <span class="link-block"><a class="external-link button is-normal is-rounded is-dark is-placeholder" aria-disabled="true">
@@ -93,11 +94,11 @@
 
   <!-- Overview figure (Figure 1 of the paper) -->
   <section class="hero teaser">
-    <div class="container is-max-widescreen">
+    <div class="container is-max-desktop">
       <div class="hero-body">
         <figure class="overview-figure">
-          <iframe class="fig-frame" src="static/appetizer/index.html" scrolling="no"
-               title="Overview: for each scenario (rolling, collision, projectile) the physical signal concentrates on the object's tokens; linear probes recover speed, momentum and gravity along the denoising trajectory; the probe transfers from ball to can and, injected back, flips the rolling direction."></iframe>
+          <iframe class="fig-frame" src="static/teaser/index.html" scrolling="no"
+               title="Overview: simulated collision, projectile and rolling videos pass through a frozen DiT. Read: an attention-weighted ridge probe decodes the motion and transfers from ball to can. Write: a direction trained with an object tracker steers the ball. The probe direction decodes but steers poorly, the trained direction steers but barely decodes, and a jointly trained direction does both."></iframe>
         </figure>
         <script>
           // embedded figures post their own height (it changes with width), so no iframe crops them
@@ -108,12 +109,14 @@
           });
         </script>
         <h2 class="subtitle has-text-centered">
-          <strong>What a frozen video DiT knows about physics.</strong>
-          For each scenario, the physical signal concentrates on the object's tokens, which the probe pools as a disk-shaped
-          region of interest (<em>localization</em>; schematic heat, not a measured map). A linear probe recovers speed, total
-          momentum and gravity from the residual stream along the denoising trajectory (<em>probing</em>), and its direction
-          holds up downstream: it still reads the quantity once the ball is replaced by a can, while a full-resolution probe
-          injected back flips the rolling direction.
+          <strong>Probe directions decode motion-related physical quantities from a video DiT but have only weak causal effects on the generated motion.</strong>
+          Simulated collision, projectile and rolling videos are forward-noised and passed once through a frozen DiT.
+          <em>Read</em>: a linear probe on attention-pooled activations regresses the target; it transfers, for example
+          from a ball to a can, after recalibrating its gain and offset. <em>Write</em>: a direction is injected during
+          generation and optimized on the motion an object tracker measures in the generated video. Injecting the probe
+          direction changes the motion unreliably or degrades the video. In a preliminary study on Wan&nbsp;2.1, the
+          tracker-trained direction turns the ball but barely predicts its motion, whereas a jointly trained direction does both.
+          <em>Clips in the Write row are illustrative, from an earlier probe-steering run on Wan&nbsp;2.1.</em>
         </h2>
       </div>
     </div>
@@ -127,24 +130,21 @@
           <h2 class="title is-3">Abstract</h2>
           <div class="content has-text-justified">
             <p>
-              Video generation models produce strikingly realistic sequences and are increasingly proposed as world models,
-              yet recent benchmarks reveal pronounced deficits in their physical reasoning. This raises the question of whether
-              these models internalize physical principles or merely reproduce familiar motion patterns.
+              Video generators produce convincing motion, but how their internal representations of a physical state relate
+              to their generated dynamics remains unclear. Across five video diffusion transformers, including two video world
+              models, we show that linear probes recover motion-related quantities such as speed, momentum, and gravity from
+              the activations. Several quantities remain decodable even at noise levels where probes applied directly to the
+              model input perform at chance. Using the model's attention to focus the probes on the object of interest
+              improves decoding accuracy, and after recalibration the probes remain predictive when objects and backgrounds
+              change.
             </p>
             <p>
-              We address this by probing internal representations of video DiTs for simulator-derived ground-truth physical
-              quantities spanning kinematic motion and rigid-body dynamics under gravity and contact. We find that these quantities are linearly decodable with high accuracy early in the
-              denoising process, substantially outperforming a baseline decoded directly from the model's own noised latents.
-              This indicates that the relevant physical information is actively constructed during denoising, rather than
-              already present in the input.
-            </p>
-            <p>
-              Additionally, we show that activations at on-object tokens carry the relevant physical information and that
-              quantities defined over multiple frames are readable from single latent-frames. Hence, information is sharply
-              localized within the token sequence and is <em>computed globally but stored locally</em>. The probes further
-              show partial extrapolation, transferring unchanged to scene variations and object configurations they were never
-              fit on. When fitted directly in the raw activation space, the probing directions can serve as steering vectors to
-              change the model's output.
+              However, accurate decoding does not provide reliable control. Interventions along probe directions rarely produce
+              the intended change in motion and can degrade the video, and decoding scores do not predict steering.
+              A preliminary study on one model shows that a direction trained to steer the rolling direction changes it but
+              barely predicts the motion. In the same study, adding a probing term to the training yields a direction that
+              steers the motion and predicts it as accurately as a linear probe. Consequently, decodability and control are
+              separate properties, each to be tested for the use it is meant to serve.
             </p>
           </div>
         </div>
@@ -161,21 +161,21 @@
           <div class="finding">
             <span class="finding-num">01</span>
             <h3 class="title is-5">Decodable</h3>
-            <p>Speed, direction, momentum and gravity are linearly decodable from the residual stream of Wan&nbsp;2.1, CogVideoX&nbsp;1.5 and Open-Sora&nbsp;2.0, early in denoising.</p>
+            <p>Speed, momentum and gravity are linearly decodable from five video DiTs, including two world models, at noise levels where a probe on the model input is at chance. Pooling with the model's own attention beats a global readout.</p>
           </div>
         </div>
         <div class="column">
           <div class="finding">
             <span class="finding-num">02</span>
-            <h3 class="title is-5">Stored locally</h3>
-            <p>A disk covering 1–2% of the tokens around the object beats a readout over the whole sequence. Multi-frame quantities are readable from a single token-frame.</p>
+            <h3 class="title is-5">Transferable</h3>
+            <p>After recalibrating only gain and offset, probes stay predictive under new backgrounds, object shapes and object counts, and partly under a new viewpoint.</p>
           </div>
         </div>
         <div class="column">
           <div class="finding">
             <span class="finding-num">03</span>
-            <h3 class="title is-5">Causally active</h3>
-            <p>Probe directions transfer across scene changes, and when injected back they flip the generated rolling direction.</p>
+            <h3 class="title is-5">Decoding &ne; steering</h3>
+            <p>Probe directions rarely turn the generated ball, and decoding scores do not predict which ones do. In a preliminary study, a jointly trained direction both steers and decodes.</p>
           </div>
         </div>
       </div>
@@ -184,16 +184,17 @@
 
   <!-- Scenarios -->
   <section class="section hero is-light">
-    <div class="container">
+    <div class="container is-max-desktop">
       <div class="has-text-centered">
         <h2 class="title is-3">Controlled Scenarios with Exact Ground Truth</h2>
       </div>
       <div class="columns is-centered">
         <div class="column is-four-fifths">
           <p class="section-lead">
-            We render about 200 videos per scenario with the Genesis simulator, so every clip comes with exact physical labels.
+            We render 200 videos per scenario with the Genesis simulator, so every clip comes with exact physical labels.
             Each video is encoded, forward-diffused to a chosen noise level, and passed once through a frozen DiT while we
-            record every layer's activations.
+            record every block's activations. We study three general-purpose video generators (Wan&nbsp;2.1, CogVideoX-1.5,
+            Open-Sora&nbsp;2.0) and two world models (Cosmos-Predict&nbsp;2.5, LingBot-World).
           </p>
         </div>
       </div>
@@ -213,30 +214,52 @@
         <div class="column">
           <figure class="video-slot" data-file="scenario_projectile.mp4">
             <video src="static/videos/scenario_projectile.mp4" poster="static/images/scene_projectile-v2.png" autoplay muted loop playsinline></video>
-            <figcaption><strong>Projectile</strong> · gravity, launch angle</figcaption>
+            <figcaption><strong>Projectile</strong> · gravity, velocity</figcaption>
           </figure>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Probing and localization -->
+  <!-- Probing -->
   <section class="section">
-    <div class="container">
+    <div class="container is-max-desktop">
       <div class="has-text-centered">
-        <h2 class="title is-3">Probing: Computed Globally, Stored Locally</h2>
+        <h2 class="title is-3">Physical Quantities Are Linearly Decodable</h2>
       </div>
       <div class="columns is-centered">
         <div class="column is-four-fifths">
           <p class="section-lead">
-            Ridge probes predict each simulator quantity across layers, noise levels and token subsets. The comparison against
-            a probe fit on the noised latent separates information already in the input from information the transformer builds.
-            Attention spans the whole clip, yet the physical signal concentrates on the object's own tokens: a small
-            disk-shaped region of interest around the object beats a readout over the whole sequence, and each token-frame
-            favours the physical state of its own phase.
+            Ridge probes predict each simulator quantity across blocks and noise levels. Instead of averaging all tokens,
+            which dilutes the object with background and mixes several objects, we pool each token-frame with the attention
+            sent from the object's tokens in the conditioning frame. Two baselines separate what the DiT adds: a global
+            probe over all tokens, and an input baseline on the noised latent with a random feature expansion.
           </p>
         </div>
       </div>
+      <!-- Featured readout. Cropped from the paper repo's posts/mockups/readout_t500.mp4
+           (posts/readout_video.py; probe predictions readout/probe_oof_collision_speed_vx_vy_wan_L31_t500.csv). -->
+      <div class="readout-feature columns is-vcentered is-centered">
+        <div class="column is-5">
+          <figure class="video-slot" style="--ar: 720 / 670" data-file="probe_readout.mp4">
+            <video src="static/videos/probe_readout.mp4" autoplay muted loop playsinline preload="metadata"></video>
+          </figure>
+        </div>
+        <div class="column is-5">
+          <h3 class="title is-4">Watching a probe read the collision</h3>
+          <p>
+            A collision clip, noised to 50% and passed once through Wan&nbsp;2.1. Linear probes on the activations read each
+            ball's direction and speed, drawn as dark arrows over the true velocity (light) and as dots on the speed chart.
+            The clip is held out from the probes' training, so the probe has never seen it.
+          </p>
+          <p class="readout-prov">
+            Wan&nbsp;2.1, block 31, out-of-fold ridge probes on region-pooled activations from our earlier analysis (not
+            the attention-weighted probe below). One prediction per token-frame (4 video frames); arrows interpolate
+            between them.
+          </p>
+        </div>
+      </div>
+
       <h3 class="title is-4 has-text-centered">How We Probe a Video Model</h3>
       <p class="section-lead">
         From a simulated clip to a single number: how well a linear readout of the model's activations recovers a physical
@@ -260,81 +283,155 @@
           them to the target. We score R² with 5-fold cross-validation split by video.</li>
       </ol>
       <!-- Main probing result: inputs + baselines (top), R^2 vs. noise per
-           target (bottom). Numbers live in static/js/probing.js. -->
+           target (bottom). Numbers live in static/js/probing.js (paper Fig. 2 / supplement grid data). -->
       <div class="pr" id="probe-results">
-        <h3 class="title is-4 has-text-centered">Physical Quantities Are Linearly Decodable</h3>
         <p class="section-lead">
-          The model's input already carries some physics, so we probe it too, masked to the same region of interest.
-          <strong>z<sub>tc</sub></strong> is exactly what the DiT receives: the noised latent with the clean anchor image.
-          <strong>z<sub>0</sub></strong> is the clean latent. Slide the noise level to
-          see how much each input still shows and what the probes recover from it.
+          The model's input already carries some physics: the noised latent <strong>z<sub>t</sub></strong> and the clean
+          conditioning frame <strong>z<sub>c</sub></strong>. We therefore probe that input too, with a random feature
+          expansion so it has as many features as an activation token. Slide the noise level to see how much the input
+          still shows and what each probe recovers.
         </p>
         <div class="pr-inputs">
           <figure class="pr-tile">
-            <video class="pr-clean" src="static/videos/latents/wan_z0.mp4" muted loop playsinline autoplay></video>
+            <video class="pr-clean" muted loop playsinline autoplay></video>
             <figcaption><strong>z<sub>0</sub></strong> · clean latent</figcaption>
           </figure>
           <span class="pr-op" aria-hidden="true">+ noise →</span>
-          <figure class="pr-tile is-ztc">
+          <figure class="pr-tile">
             <video class="pr-noised" muted loop playsinline autoplay></video>
             <figcaption><strong>z<sub>t</sub></strong> · noised latent</figcaption>
           </figure>
           <span class="pr-op" aria-hidden="true">+</span>
-          <figure class="pr-tile is-ztc">
-            <img src="static/images/anchor_frame.png" alt="Anchor image: the clip's first frame">
-            <figcaption><strong>z<sub>c</sub></strong> · anchor image</figcaption>
+          <figure class="pr-tile">
+            <img src="static/images/anchor_frame.png" alt="Conditioning image: the clip's first frame">
+            <figcaption><strong>z<sub>c</sub></strong> · conditioning frame</figcaption>
           </figure>
         </div>
-        <p class="pr-brace"><span>z<sub>tc</sub> = [z<sub>t</sub> | z<sub>c</sub>], the DiT's actual input</span></p>
+        <p class="pr-brace"><span>[z<sub>c</sub> | z<sub>t</sub>], the DiT's actual input</span></p>
+        <p class="pr-clipnote" aria-live="polite"></p>
         <div class="steer-control pr-control">
           <label class="steer-label" for="pr-noise">Input noise (SNR) <output class="pr-db" for="pr-noise"></output></label>
-          <input type="range" id="pr-noise" class="steer-range pr-range" min="0" max="5" step="1" value="3">
+          <input type="range" id="pr-noise" class="steer-range pr-range" min="0" max="7" step="1" value="5">
           <div class="pr-scale" aria-hidden="true"><span>noisier</span><span>cleaner</span></div>
         </div>
         <div class="xp-swaps pr-models" role="group" aria-label="Model">
           <button type="button" data-model="wan" aria-pressed="true">Wan 2.1</button>
           <button type="button" data-model="cog" aria-pressed="false">CogVideoX-1.5</button>
           <button type="button" data-model="sora" aria-pressed="false">Open-Sora 2.0</button>
+          <button type="button" data-model="cos" aria-pressed="false">Cosmos-Predict 2.5</button>
+          <button type="button" data-model="ling" aria-pressed="false">LingBot-World</button>
         </div>
         <div class="pr-legend">
-          <span><i class="pr-l-dit"></i>DiT activations (mean over blocks, band = min–max)</span>
-          <span><i class="pr-l-ztc"></i>z<sub>tc</sub> input baseline</span>
-          <span><i class="pr-l-z0"></i>z<sub>0</sub> clean latent</span>
+          <span><i class="pr-l-dit"></i>attention-weighted probe (median over 10 blocks, band = min–max)</span>
+          <span><i class="pr-l-glob"></i>global activation probe (median over the same blocks)</span>
+          <span><i class="pr-l-base"></i>input baseline</span>
         </div>
         <div class="pr-grid"></div>
         <p class="section-note">
-          Probe R² (200 videos, 5-fold video-level CV) against input noise. At −40 dB the input is pure noise and z<sub>tc</sub>
-          sits at chance, yet the DiT already decodes rolling kinematics. Gravity, launch angle and approach angle are barely
-          in z<sub>0</sub> at all, so the DiT computes them rather than reading them off its input.
+          Probe R² (n&nbsp;=&nbsp;200 videos per scenario, 5-fold video-level cross-validation) against input noise, from
+          almost pure noise (−40&nbsp;dB) to a nearly clean latent (+16&nbsp;dB). (t) marks a time-varying target, fitted with
+          each token-frame as a sample. Several quantities are decodable from the activations where the input baseline is
+          at chance. Total momentum is the exception to the attention probe's lead: a mean over all tokens already sums over
+          both balls.
         </p>
       </div>
 
-      <!-- Extrapolation: probe fitted on the source scene, scored on a swapped
-           one. Numbers (ROI arm) live in static/js/extrapolation.js. -->
+      <!-- Transfer: probe fitted on the source scene, scored on a scene that changes one factor.
+           Numbers live in static/js/extrapolation.js (paper appendix table, 0 dB). -->
       <div class="xp" id="xp">
-        <h3 class="title is-4 has-text-centered">Extrapolation to Unseen Scenes</h3>
+        <h3 class="title is-4 has-text-centered">Transfer to New Scenes</h3>
         <p class="section-lead">
-          A region-of-interest probe fitted on one scene is scored on a scene that changes a single factor, with only a
-          gain and offset recalibrated on ten target videos. The source scene plays as an inset. The ring marks a
-          probe trained on the target scene itself; the dot is the transferred probe.
+          A probe fitted on one scene is scored on a scene that changes a single factor. A video does not fix the absolute
+          scale of its content, so only a gain and an offset are refitted on ten target videos; the probe direction stays
+          fixed. The inset shows the source scene the probe was fitted on. The ring marks a probe fitted on the target
+          scene itself, the dot the transferred probe.
         </p>
         <div class="xp-row">
           <div>
             <div class="xp-compare">
-              <video class="xp-src" src="static/videos/xp_rolling_source.mp4" muted playsinline autoplay></video>
-              <video class="xp-tgt" src="static/videos/xp_rolling_background.mp4" muted playsinline autoplay></video>
-              <span class="xp-tag">Source · probe fitted</span>
+              <video class="xp-tgt" src="static/videos/xp_rolling_background.mp4" muted playsinline autoplay aria-label="Target scene"></video>
               <span class="xp-tag is-right">Target · probe scored</span>
+              <figure class="xp-pip">
+                <video class="xp-src" src="static/videos/xp_rolling_source.mp4" muted playsinline autoplay aria-label="Source scene"></video>
+                <span class="xp-tag">Source · probe fitted</span>
+              </figure>
             </div>
-            <div class="xp-swaps" role="group" aria-label="Scene change">
+            <div class="xp-swaps xp-conds" role="group" aria-label="Scene change">
               <button type="button" data-cond="bg" aria-pressed="true">background</button>
               <button type="button" data-cond="shp" aria-pressed="false">shape</button>
               <button type="button" data-cond="psp" aria-pressed="false">perspective</button>
               <button type="button" data-cond="cnt" aria-pressed="false">count</button>
             </div>
             <p class="xp-desc"></p>
+            <div class="xp-swaps xp-probes" role="group" aria-label="Probe">
+              <button type="button" data-probe="attn" aria-pressed="true">attention-weighted</button>
+              <button type="button" data-probe="glob" aria-pressed="false">global</button>
+              <button type="button" data-probe="base" aria-pressed="false">input baseline</button>
+            </div>
           </div>
           <div class="xp-chart" aria-live="polite"></div>
+        </div>
+        <p class="section-note">
+          R² at 0&nbsp;dB on the target scene (100 videos per variant; recalibrated scores on the 90 not used for the
+          calibration). Each probe is read at the block with the best source-scene score. Open circles mark recalibrated
+          scores below zero, drawn at zero.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Occlusion explorer: paper supplement, Occlusion -->
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="has-text-centered">
+        <h2 class="title is-3">Out of Sight, Out of Mind?</h2>
+      </div>
+      <div class="columns is-centered">
+        <div class="column is-four-fifths">
+          <p class="section-lead">
+            Speed and direction stay constant in this rolling scene, so a model that carries them forward could still expose
+            them once a cardboard sheet hides the ball. Grab the cardboard at the left edge of the clip, drag it over the
+            ball, and watch the probes lose it.
+          </p>
+        </div>
+      </div>
+
+      <div class="occ-demo" id="occ-demo">
+        <div class="columns is-vcentered">
+          <div class="column is-5">
+            <figure class="video-slot occ-stage" style="--ar: 832 / 480" data-file="occlusion_rolling.mp4">
+              <video src="static/videos/occlusion_rolling.mp4" poster="static/images/occlusion_frame0.jpg" muted playsinline preload="auto"></video>
+              <div class="occ-sheet" tabindex="0" role="slider" aria-label="Cardboard position (video frame)"
+                   aria-valuemin="0" aria-valuemax="80" aria-valuenow="0"><span>drag</span></div>
+            </figure>
+            <div class="occ-status">
+              <output id="occ-frame">frame 0</output>
+              <button type="button" class="occ-replay">↺ pull it back out</button>
+            </div>
+          </div>
+          <div class="column is-7">
+            <svg viewBox="0 0 560 260" role="img" aria-label="Attention-weighted probe R² per token-frame over video time for five models; R² drops to near zero once the ball is hidden, except for the best Cosmos-Predict 2.5 blocks."></svg>
+            <div class="occ-agg" role="radiogroup" aria-label="Block aggregation">
+              <label><input type="radio" name="occ-agg" value="1" checked> median over 10 blocks</label>
+              <label><input type="radio" name="occ-agg" value="2"> best block per model</label>
+            </div>
+            <ul class="occ-readout" aria-live="polite"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="columns is-centered">
+        <div class="column is-four-fifths">
+          <p class="section-note">
+            The clip is video 163 of the 200 occluded rolling videos, one of the fastest; the cardboard motion is the same in all of them and hides
+            the ball from video frame 21 on. Curves: attention-weighted probe R² per token-frame at +16&nbsp;dB, averaged
+            over speed, direction and position, one probe per token-frame, n&nbsp;=&nbsp;200, 5-fold video-level
+            cross-validation. They are scores over all 200 videos, not predictions for this clip. The best block per model is the one of the
+            10 report blocks with the highest R² averaged over the hidden frames, so it is selected on the window it is
+            scored on (Wan block 4, CogVideoX 8, Open-Sora 11, Cosmos 18, LingBot 4). Most blocks fall to chance
+            once the ball is hidden; mid-depth Cosmos-Predict&nbsp;2.5 blocks are the exception, and only at low noise
+            (R²&nbsp;0.51 at +8&nbsp;dB, 0.23 at 0&nbsp;dB for its best block).
+          </p>
         </div>
       </div>
     </div>
@@ -343,7 +440,7 @@
 
   <!-- Steering -->
   <section class="section hero is-light">
-    <div class="container">
+    <div class="container is-max-desktop">
       <div class="has-text-centered">
         <h2 class="title is-3">Steering: Flipping the Rolling Direction</h2>
       </div>
@@ -435,7 +532,7 @@
 
   <!-- Steering vs readout: probing-weight slider (static/js/beta.js) -->
   <section class="section beta-demo" id="beta-demo">
-    <div class="container">
+    <div class="container is-max-desktop">
       <div class="has-text-centered">
         <h2 class="title is-3">One Direction, Two Jobs: Steering vs Readout</h2>
       </div>
@@ -502,7 +599,7 @@
   <!-- Gallery: video carousel -->
   <section class="hero is-small">
     <div class="hero-body">
-      <div class="container">
+      <div class="container is-max-desktop">
         <div class="has-text-centered">
           <h2 class="title is-3">Gallery</h2>
         </div>
@@ -565,7 +662,7 @@
   </main>
 
   <footer class="footer">
-    <div class="container">
+    <div class="container is-max-desktop">
       <div class="columns is-centered">
         <div class="column is-8">
           <div class="content has-text-centered">

@@ -1,0 +1,429 @@
+<!doctype html>
+<!--
+  GENERATED from the paper's figures/overview/html/fig1.html (Fig. 1) by a one-off transform
+  (layout enlarged for the web): every clip is a 1.3 cm square cut by the same rule
+  (one-off crop: 400x400 crop of the 832x480 generation centred on the object's path,
+  scaled to 320); scenario, ball/can and probe-direction tiles are looping clips;
+  the probe-direction clip is cropped from the paper repo's posts/mockups/readout_t500.mp4
+  (Wan 2.1 block 31, out-of-fold region-pooled probes). The figure zooms to the iframe width and
+  posts its height (figHeight). WRITE clips: earlier probe-steering run (Wan 2.1 block 21, strength 0.12 vs unsteered), illustrative.
+-->
+<!--
+  Fig. 1 (CVPR) -- HTML prototype of figures/overview/overview_cvpr.tex.
+  Same content, notation and assets; layout by CSS grid/flex, connectors drawn
+  by the script at the bottom from the laid-out element boxes.
+  Decodability is shown qualitatively (no data): true vs decoded velocity arrows on
+  figures/appetizer/rolling_static.png; the true arrow follows the trail in rolling.png.
+  No numbers anywhere in the figure.
+  Export:  ./render.sh  (headless Chrome --print-to-pdf) -> ../overview_cvpr_html.pdf,
+  which sec/1_intro.tex includes.  Images are the repo's own (../../appetizer/, ../);
+  fonts/ = TeX Gyre Termes (GUST Font License), vendor/katex = KaTeX 0.16.11 (MIT).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Overview</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<script src="vendor/katex/katex.min.js"></script>
+<style>
+  @font-face { font-family: Termes; src: url(fonts/texgyretermes-regular.otf); }
+  @font-face { font-family: Termes; src: url(fonts/texgyretermes-bold.otf); font-weight: 700; }
+  @font-face { font-family: Termes; src: url(fonts/texgyretermes-italic.otf); font-style: italic; }
+  :root {
+    --read: 0 128 128;          /* c1, teal  */
+    --write: 230 140 0;         /* c6!85!red */
+    --dit: 135 104 230;         /* c3        */
+    --ink: #333;
+    --muted: #808080;
+    --ok: #1f6b1f;
+    --no: #bf1f1f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { overflow: hidden;
+         font: 7pt/1.15 "Helvetica Neue", Helvetica, Arial, sans-serif; color: var(--ink); }
+  header, .tag, .hdr { font-family: Termes, "Times New Roman", serif; }
+  .katex { font-size: 1.0em; }
+  .sc-caps { font-variant-caps: small-caps; }
+
+  #fig { position: relative; width: 18.2cm; height: 8.75cm; padding: .34cm .12cm .41cm;
+         display: grid; grid-template-columns: 2.2cm 6.5cm 4.6cm 3.2cm;
+         grid-template-rows: 3.7cm 3.7cm; column-gap: .4cm; row-gap: .6cm; }
+
+  /* ------------------------------------------------ glass cards */
+  .card { --a: 120 120 120; --b: 160 160 160; --ga: .14; --gb: .10;
+          position: relative; border-radius: 8pt; display: flex; flex-direction: column;
+          padding: 7pt 5pt 5pt;
+          background:
+            radial-gradient(75% 65% at 10% 12%, rgb(var(--a) / var(--ga)), transparent 72%),
+            radial-gradient(75% 65% at 92% 96%, rgb(var(--b) / var(--gb)), transparent 72%),
+            linear-gradient(180deg, #fff, #fbfbfb);
+          box-shadow:
+            0 0 0 .45pt rgb(0 0 0 / .10),
+            0 .6pt 1.2pt rgb(0 0 0 / .05),
+            0 5pt 12pt -6pt rgb(var(--a) / .45),
+            inset 0 0 0 1.3pt rgb(255 255 255 / .85); }
+  .card.sc    { grid-area: 1 / 1 / 3 / 2; --a: 64 92 150; --b: 120 104 190; --ga: .26; --gb: .16; }
+  .card.read  { --a: var(--read);  --b: var(--read);  --ga: .20; --gb: .09; }
+  .card.write { --a: var(--write); --b: var(--write); --ga: .12; --gb: .06; }
+  /* preliminary (tracker-trained direction and everything downstream): dashed outline, no glow, as the joint card */
+  .card.write, .card.joint { border: .6pt dashed rgb(150 150 150 / .8); box-shadow: inset 0 0 0 1.3pt rgb(255 255 255 / .85); }
+  /* joint: a small preliminary aside, not a result column -- dashed outline, no tint, centred on the mismatch */
+  .card.joint { grid-area: 1 / 4 / 3 / 5; align-self: center; justify-self: center; width: 2.85cm; padding: 6pt 5pt 7pt;
+                background: #fff; }
+
+  header { display: flex; align-items: center; justify-content: center; gap: 4.5pt; height: 10pt; flex: none;
+           font-size: 9pt; font-variant-caps: small-caps; letter-spacing: .035em; white-space: nowrap; }
+  .tag { display: inline-flex; align-items: center; gap: 2pt; font-size: 7.5pt; font-weight: 700;
+         font-variant-caps: all-small-caps; letter-spacing: .08em;
+         padding: 1.6pt 4.2pt 1.8pt 3.2pt; border-radius: 99pt; color: #fff; }
+  .tag .ic { width: 8pt; height: 8pt; }
+  .tag .tt { position: relative; top: -.85pt; }   /* small caps have no ascenders: lift them to the pill's centre */
+  .read  header { color: rgb(0 84 84); }  .read  .tag { background: rgb(var(--read) / .9); }
+  .write header { color: rgb(150 88 0); } .write .tag { background: rgb(var(--write) / .95); }
+  .sc header, .joint header { color: #2b2b2b; }
+  .ic { display: inline-block; }  .ic svg { display: block; width: 100%; height: 100%; }
+
+  .body { position: relative; flex: 1; display: flex; align-items: center; }
+
+  /* ------------------------------------------------ pieces */
+  .tile { position: relative; border-radius: 3pt; overflow: hidden; flex: none;
+          box-shadow: 0 0 0 .45pt rgb(0 0 0 / .14), 0 1pt 2.5pt rgb(0 0 0 / .14); }
+  .tile img, .tile video { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .cap { position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+         padding-top: 2.5pt; color: var(--muted); white-space: nowrap; }
+  .hold { position: relative; flex: none; }
+
+  .sc .body { flex-direction: column; justify-content: space-evenly; padding-bottom: 7pt; }
+  .sc .tile { width: 1.3cm; height: 1.3cm; }
+  .sc .hold { display: flex; flex-direction: column; align-items: center; }
+  .sc .cap { position: static; transform: none; padding-top: 1.5pt; }
+
+  .dit { position: relative; width: 1.1cm; height: 1.1cm; border-radius: 3pt; flex: none;
+         background: rgb(var(--dit) / .12); box-shadow: inset 0 0 0 .5pt rgb(var(--dit) / .35);
+         display: flex; flex-direction: column; justify-content: center; gap: .5mm; align-items: center; }
+  .dit b { position: absolute; top: .7mm; left: 1.2mm; font-size: 7pt; font-weight: 700; color: rgb(95 70 170); }
+  .dit img { position: absolute; top: .8mm; right: .9mm; width: 2.2mm; }
+  .dit i { display: block; width: 8mm; height: 1.4mm; border-radius: 1pt; background: rgb(var(--dit) / .38); }
+  .dit .pad { height: 1.4mm; background: none; }
+  /* bars sit lower, clear of the label: the top pad is 2 mm taller, so the box moves up by
+     half of that and bar 2 stays on the row's centre line */
+  .dit i.pad:first-of-type { height: 3.4mm; }
+  .dit { transform: translateY(-1mm); }   /* keeps bar 2 on the centre line */
+
+  .grid { display: grid; grid-template-columns: repeat(4, 1.4mm); grid-template-rows: repeat(3, 1.4mm);
+          box-shadow: 0 0 0 .4pt #ccc; background: #fff; }
+  .grid span { box-shadow: inset 0 0 0 .2pt #d6d6d6; }
+
+  .box { flex: none; background: #fff; border-radius: 3pt; text-align: center;
+         padding: 3pt 5pt; box-shadow: 0 0 0 .55pt var(--bc, #c8c8c8), 0 1pt 2pt rgb(0 0 0 / .06); }
+  .read .box  { --bc: rgb(var(--read) / .5); }
+  .loss       { --bc: rgb(var(--write) / .65) !important; }
+
+  .pill { display: inline-flex; align-items: center; gap: 2.5pt; font-size: 7.5pt; font-weight: 600; color: var(--ok);
+          background: rgb(31 107 31 / .10); padding: 1.8pt 6pt; border-radius: 99pt; }
+
+  /* read / write verdict of the whole card: a round glass tab across the card's top-left border,
+     60% above the edge so it clears the title */
+  .tab { position: absolute; top: calc(-.6 * .42cm); left: 9pt; z-index: 2; display: flex; gap: 6pt; align-items: center;
+         height: .42cm; padding: 0 6pt 0 5pt; border-radius: 99pt; background: rgb(255 255 255 / .94);
+         box-shadow: 0 0 0 .45pt rgb(0 0 0 / .12), 0 1.5pt 4pt -1pt rgb(var(--a) / .45), inset 0 0 0 1pt #fff; }
+  .status { position: relative; width: .28cm; height: .28cm; }
+
+  .read .status { color: rgb(0 110 110); }  .write .status { color: rgb(205 125 0); }
+  .status > svg { position: absolute; right: -2.6pt; top: -2.6pt; width: 5.8pt; height: 5.8pt; overflow: visible; }
+
+  /* result cards: content column + status column */
+  .res .body { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; align-content: space-evenly; row-gap: 4pt;
+               align-items: center; justify-items: center; }
+  .plot { position: relative; width: 2.2cm; height: 1.1cm; margin-left: 4pt;
+          border-left: .5pt solid #b3b3b3; border-bottom: .5pt solid #b3b3b3; }
+  .plot img { position: absolute; left: 0; bottom: 0; width: 100%; height: 100%; }
+  .plot .yl { position: absolute; left: -4pt; top: 50%; transform: translate(-50%,-50%) rotate(-90deg);
+              color: var(--muted); }
+  .plot .xl { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); padding-top: 1.5pt;
+              color: var(--muted); white-space: nowrap; }
+  .velrow { display: flex; align-items: center; gap: 6pt; width: 3.9cm; }   /* = pair: .7 + 1.12 + .7 */
+  .tile.vel { width: 1.3cm; height: 1.3cm; }
+  .tile.vel svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .key { display: flex; flex-direction: column; gap: 2pt; color: var(--muted); }
+  .key > span { display: flex; align-items: center; gap: 2.5pt; white-space: nowrap; }
+  .key .kh { color: #6e6e6e; }
+  .pair { display: flex; gap: 1.3cm; margin-bottom: 9pt; }   /* room for the captions */
+  #writeR .body { grid-template-rows: auto; }   /* one row: the pair sits on the card's centre */
+  .pair .tile { width: 1.3cm; height: 1.3cm; }   /* every clip: same 1.3 cm square, same crop (crop_tiles.py) */
+
+  .joint header { font-size: 8pt; height: auto; }
+  .joint .body { flex-direction: column; justify-content: center; gap: 4pt; margin-top: 5pt; }
+  .joint .pill { font-size: 6.5pt; padding: 1.5pt 5pt; white-space: nowrap; }
+  .fdash { display: inline-block; width: 9pt; height: 6pt; vertical-align: -.5pt; margin-right: 2pt;
+           border: .6pt dashed rgb(150 150 150); border-radius: 1.5pt; }
+  .joint .scope { color: var(--muted); text-align: center; white-space: nowrap; font-size: 6.5pt; }
+  .fnote { position: absolute; right: .2cm; bottom: .45cm; width: 3.0cm; line-height: 1.25; color: var(--muted); font-size: 6pt; font-style: italic; }
+
+  #wires { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .wl { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; line-height: 1; }
+</style>
+</head>
+<body>
+<div id="fig">
+
+  <!-- ===================================================== scenarios -->
+  <section class="card sc">
+    <header>Scenarios</header>
+    <div class="body">
+      <div class="hold"><div class="tile"><video src="scene_collision.mp4" autoplay muted loop playsinline preload="auto" aria-label="collision"></video></div><div class="cap">Collision</div></div>
+      <div class="hold"><div class="tile"><video src="scene_projectile.mp4" autoplay muted loop playsinline preload="auto" aria-label="projectile"></video></div><div class="cap">Projectile</div></div>
+      <div class="hold"><div class="tile"><video src="scene_rolling.mp4" autoplay muted loop playsinline preload="auto" aria-label="rolling"></video></div><div class="cap">Rolling</div></div>
+    </div>
+  </section>
+
+  <!-- ===================================================== READ -->
+  <section class="card read" id="readP">
+    <header><span class="tag"><i class="ic" data-ic="read"></i><span class="tt">Read</span></span>Attention-weighted probe</header>
+    <div class="body" style="justify-content: space-between; padding: 0 4pt 0 6pt;">
+      <div class="dit" id="ditR"><b>DiT</b><img src="snowflake_c3.png"><i class="pad"></i><i></i><i id="tapBar"></i><i></i><i class="pad"></i></div>
+      <div style="display:flex; gap: .42cm; margin-left: -.1cm;">
+        <div class="hold"><div class="grid" id="g0"></div><div class="cap m">\frame{=}0</div></div>
+        <div class="hold"><div class="grid" id="g1"></div><div class="cap m">\frame{>}0</div></div>
+      </div>
+      <div class="box" id="probeBox" style="width:1.62cm; white-space:nowrap">ridge probe<br><span class="m">\rT{\probe}\attnPool</span></div>
+    </div>
+  </section>
+
+  <section class="card read res" id="readR">
+    <div class="tab"><div class="status"><i class="ic" data-ic="read" style="width:100%;height:100%"></i><svg data-mark="check"></svg></div><div class="status"><i class="ic" data-ic="write" style="width:100%;height:100%"></i><svg data-mark="cross"></svg></div></div>
+    <header>Probe direction <span class="m">\probe</span></header>
+    <div class="body">
+      <div class="velrow"><div class="tile vel">
+        <video src="readout_tile.mp4" autoplay muted loop playsinline preload="auto" aria-label="collision with true and decoded velocity arrows"></video></div>
+        <div class="key">
+          <span><svg width="12pt" height="4pt" viewBox="0 0 12 4"><path d="M.5 2H11.5" stroke="#b9c2cc" stroke-width="1.2" stroke-linecap="round"/></svg>true&nbsp;<span class="m">\vel</span></span>
+          <span><svg width="12pt" height="4pt" viewBox="0 0 12 4"><path d="M.5 2H11.5" stroke="#e8823a" stroke-width="2.6" stroke-linecap="round"/></svg>decoded&nbsp;<span class="m">\vel</span></span></div></div>
+      <div class="pair" id="pairR">
+        <div class="hold"><div class="tile" id="tBall"><video src="transfer_ball.mp4" autoplay muted loop playsinline preload="auto" aria-label="rolling ball"></video></div><div class="cap">ball</div></div>
+        <div class="hold"><div class="tile" id="tCan"><video src="transfer_can.mp4" autoplay muted loop playsinline preload="auto" aria-label="rolling can"></video></div><div class="cap">can</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== WRITE -->
+  <section class="card write" id="writeP" style="grid-area: 2 / 2;">
+    <header><span class="tag"><i class="ic" data-ic="write"></i><span class="tt">Write</span></span>Tracker-trained direction</header>
+    <div class="body" style="justify-content: space-between; padding: 0 4pt 0 6pt;">
+      <div class="dit" id="ditW"><b>DiT</b><img src="snowflake_c3.png"><i class="pad"></i><i></i><i id="outBar"></i><i id="injBar"></i><i class="pad"></i></div>
+      <div class="tile" id="gen" style="width:1.3cm; height:1.3cm"><video src="gen_tracked.mp4" autoplay muted loop playsinline preload="auto" aria-label="generated clip with the tracked ball boxed"></video></div>
+      <div class="box" id="trk" style="width:1.1cm">object<br>tracker</div>
+      <div class="box loss" id="loss" style="width:1.1cm"><span class="m">\Ls_{\mathrm{steer}}</span></div>
+    </div>
+  </section>
+
+  <section class="card write res" id="writeR" style="grid-area: 2 / 3;">
+    <div class="tab"><div class="status"><i class="ic" data-ic="read" style="width:100%;height:100%"></i><svg data-mark="cross"></svg></div><div class="status"><i class="ic" data-ic="write" style="width:100%;height:100%"></i><svg data-mark="check"></svg></div></div>
+    <header>Steering direction <span class="m">\steerDir</span></header>
+    <div class="body">
+      <div class="pair" id="pairW">
+        <div class="hold"><div class="tile" id="base"><video src="steer_base.mp4" autoplay muted loop playsinline preload="auto" aria-label="unsteered generation"></video></div><div class="cap">baseline</div></div>
+        <div class="hold"><div class="tile" id="steer"><video src="steer_pos0.12.mp4" autoplay muted loop playsinline preload="auto" aria-label="steered generation"></video></div><div class="cap">steered</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== joint -->
+  <section class="card joint" id="joint">
+    <header>Joint direction</header>
+    <div class="body">
+      <i class="ic" data-ic="joint" style="width:.8cm; height:.57cm"></i>
+      <div class="box"><span class="m">\Ls_{\mathrm{steer}}+\Ls_{\mathrm{probe}}</span></div>
+      <span class="pill"><i class="ic" data-ic="ok" style="width:6pt;height:6pt"></i>decodes + steers</span>
+      <div class="scope">motion direction only</div>
+    </div>
+  </section>
+
+  <svg id="wires"></svg>
+  <div class="fnote"><span class="fdash"></span>Dashed: preliminary.</div>
+</div>
+
+<script>
+// ---- notation: videoVariables.tex / math_commands.tex
+const MACROS = {
+  "\\probe": "\\boldsymbol{w}", "\\vel": "\\boldsymbol{v}", "\\steerDir": "\\boldsymbol{d}", "\\act": "\\boldsymbol{h}",
+  "\\attnPool": "\\bar{\\boldsymbol{h}}^{\\mathrm{att}}", "\\Ls": "\\mathcal{L}",
+  "\\alphastr": "\\alpha", "\\frame": "f", "\\layer": "l", "\\rT": "{#1}^{\\top}",
+};
+const tex = s => katex.renderToString(s, { macros: MACROS, throwOnError: true });
+document.querySelectorAll(".m").forEach(e => e.innerHTML = tex(e.textContent));
+
+// ---- token-frame grids (4 x 3, j counted from the bottom as in the TikZ)
+const teal = (s) => `color-mix(in srgb, rgb(0 128 128) ${s}%, white)`;
+function grid(id, hot, heat) {
+  const g = document.getElementById(id);
+  for (let j = 2; j >= 0; j--) for (let i = 0; i < 4; i++) {
+    const c = document.createElement("span");
+    const h = heat.find(([a, b]) => a === i && b === j);
+    if (hot.some(([a, b]) => a === i && b === j)) c.style.background = "rgb(0 102 102)";
+    else if (h) c.style.background = teal(h[2]);
+    g.appendChild(c);
+  }
+}
+grid("g0", [[0, 1], [1, 1]], []);
+grid("g1", [], [[2, 1, 35], [3, 1, 90], [3, 2, 35], [3, 0, 30], [2, 2, 15]]);
+
+// ---- line icons: same motif as read_and_write_symbols.svg, one stroke weight, currentColor
+const LENS = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}"/><path d="M${x + r * .72} ${y + r * .72} l3 3"/>`;
+const PEN = (x, y, k = 1) => `<path transform="translate(${x} ${y}) scale(${k})" d="M7.6 0a1.9 1.9 0 0 1 2.7 2.7l-8.3 8.3-3.6.9.9-3.6z"/>`;
+const ICON = {
+  read:  `<path d="M20 11.5V7.5A3.5 3.5 0 0 0 16.5 4h-9A3.5 3.5 0 0 0 4 7.5v9A3.5 3.5 0 0 0 7.5 20H11"/>` + LENS(14.6, 14.6, 3.6),
+  write: `<path d="M12 4H7.5A3.5 3.5 0 0 0 4 7.5v9A3.5 3.5 0 0 0 7.5 20h9a3.5 3.5 0 0 0 3.5-3.5V12"/>` + PEN(11, 3.4),
+  joint: `<path d="M21 4H6.5A3.5 3.5 0 0 0 3 7.5v9A3.5 3.5 0 0 0 6.5 20h21a3.5 3.5 0 0 0 3.5-3.5V12"/>` + LENS(10.6, 11.6, 3.9) + PEN(19, 3.4),
+  ok:    `<path d="M4 12.5l5 5L20 6.5"/>`,
+};
+const VB = { joint: "1.5 2.2 31.6 19.6", ok: "0 0 24 24" };   // others: cropped to the frame
+const JG = `<defs><linearGradient id="jg" gradientUnits="userSpaceOnUse" x1="4" y1="6" x2="30" y2="18">
+  <stop offset="0" stop-color="rgb(0 110 110)"/><stop offset="1" stop-color="rgb(205 125 0)"/></linearGradient></defs>`;
+document.querySelectorAll(".ic").forEach(e => e.innerHTML =
+  `<svg viewBox="${VB[e.dataset.ic] || "2.4 2.4 19.6 19.6"}" fill="none" stroke="${e.dataset.ic === "joint" ? "url(#jg)" : "currentColor"}" stroke-width="${{ok: 2.8, joint: 1.05}[e.dataset.ic] || 1.35}" stroke-linecap="round" stroke-linejoin="round">${e.dataset.ic === "joint" ? JG : ""}${ICON[e.dataset.ic]}</svg>`);
+
+// ---- check / cross marks
+const MARK = {   // corner badge: filled disc + white glyph, white ring separates it from the icon
+  check: `<circle r="4.3" fill="#2e8b3e" stroke="#fff" stroke-width="1"/><path d="M-1.9 .1 L-.5 1.5 L2 -1.2" stroke="#fff" stroke-width="1.05" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`,
+  cross: `<circle r="4.3" fill="#c62828" stroke="#fff" stroke-width="1"/><path d="M-1.5 -1.5 L1.5 1.5 M-1.5 1.5 L1.5 -1.5" stroke="#fff" stroke-width="1.05" fill="none" stroke-linecap="round"/>`,
+};
+document.querySelectorAll("svg[data-mark]").forEach(s => {
+  s.setAttribute("viewBox", "-4.5 -4.5 9 9"); s.innerHTML = MARK[s.dataset.mark];
+});
+
+// ---- connectors, drawn from the laid-out boxes
+function wires() {
+const fig = document.getElementById("fig"), W = document.getElementById("wires");
+const PT = 96 / 72, NS = "http://www.w3.org/2000/svg";
+const F = fig.getBoundingClientRect();
+W.setAttribute("viewBox", `0 0 ${F.width} ${F.height}`);
+const R = (el) => { const r = (typeof el === "string" ? document.getElementById(el) : el).getBoundingClientRect();
+  return { l: r.left - F.left, r: r.right - F.left, t: r.top - F.top, b: r.bottom - F.top,
+           cx: (r.left + r.right) / 2 - F.left, cy: (r.top + r.bottom) / 2 - F.top }; };
+const card = (sel) => R(document.querySelector(sel));
+const bodyMid = (id) => R(document.querySelector(`#${id} .body`)).cy;
+
+const defs = document.createElementNS(NS, "defs"); W.appendChild(defs);
+const heads = {};
+function head(col, size) {
+  const k = col + size; if (heads[k]) return heads[k];
+  const m = document.createElementNS(NS, "marker"), id = "h" + Object.keys(heads).length;
+  m.setAttribute("id", id); m.setAttribute("viewBox", "0 0 10 10"); m.setAttribute("refX", "10");
+  m.setAttribute("refY", "5"); m.setAttribute("markerUnits", "userSpaceOnUse");
+  m.setAttribute("markerWidth", size); m.setAttribute("markerHeight", size); m.setAttribute("orient", "auto");
+  m.innerHTML = `<path d="M0 .8 L10 5 L0 9.2 L2.6 5 Z" fill="${col}"/>`;
+  defs.appendChild(m); return heads[k] = id;
+}
+function path(d, { col = "#8c8c8c", w = .7, tip = 4.2, dash = null } = {}) {
+  const p = document.createElementNS(NS, "path");
+  p.setAttribute("d", d); p.setAttribute("fill", "none"); p.setAttribute("stroke", col);
+  p.setAttribute("stroke-width", w * PT); p.setAttribute("stroke-linecap", "round");
+  p.setAttribute("stroke-linejoin", "round");
+  if (dash) p.setAttribute("stroke-dasharray", dash.map(x => x * PT).join(" "));
+  W.appendChild(p);
+  if (tip) {   // hide the last 60% of the head length of the stroke, so no line pokes past the tip
+    p.setAttribute("marker-end", `url(#${head(col, tip * PT)})`);
+    const L = p.getTotalLength(); p.setAttribute("stroke-dasharray", `${L - .6 * tip * PT} ${L}`);
+  }
+  return p;
+}
+function label(x, y, html, style = "") {
+  const d = document.createElement("div"); d.className = "wl"; d.innerHTML = html;
+  d.style.cssText = `left:${x}px; top:${y}px; ${style}`; fig.appendChild(d); return d;
+}
+function dot(x, y, col, r) {
+  const c = document.createElementNS(NS, "circle");
+  c.setAttribute("cx", x); c.setAttribute("cy", y); c.setAttribute("r", r * PT); c.setAttribute("fill", col);
+  W.appendChild(c);
+}
+const g = 2 * PT;                                  // clearance at arrow ends
+const TEAL = "rgb(0 102 102)", AMBER = "rgb(196 120 0)";
+
+// scenarios -> process -> results, on each row's centre line
+const yR = bodyMid("readP"), yW = bodyMid("writeP");
+const sc = card(".card.sc"), pR = R("readP"), rR = R("readR"), pW = R("writeP"), rW = R("writeR"), jo = R("joint");
+for (const y of [yR, yW]) path(`M${sc.r + g} ${y} H${pR.l - g}`, { col: "#b3b3b3", w: 1.1, tip: 5.5 });
+path(`M${pR.r + g} ${yR} H${rR.l - g}`, { col: "rgb(115 185 185)", w: 1.1, tip: 5.5 });
+path(`M${pW.r + g} ${yW} H${rW.l - g}`, { col: "rgb(239 180 89)", w: 1.1, tip: 5.5 });
+
+// READ: tap -> grid -> (attention) -> grid -> probe
+const tb = R("tapBar"), g0 = R("g0"), g1 = R("g1"), pb = R("probeBox");
+dot(tb.r, tb.cy, "rgb(0 128 128)", 1.6);
+path(`M${tb.r} ${tb.cy} H${g0.l - g}`, { col: TEAL });
+label((tb.r + g0.l) / 2, tb.cy + 6 * PT, tex("\\act_\\layer"));
+path(`M${g1.r + g} ${g1.cy} H${pb.l - g}`, { col: TEAL });
+label((g1.r + pb.l) / 2 + 1 * PT, g1.cy - 7 * PT, tex("\\attnPool"));
+const ay = g0.t - 1.5 * PT;
+path(`M${g0.cx} ${ay} C${g0.cx + 4 * PT} ${ay - 9 * PT}, ${g1.cx - 4 * PT} ${ay - 9 * PT}, ${g1.cx} ${ay - g / 2}`, { col: TEAL, w: .55, tip: 3.4 });
+label((g0.cx + g1.cx) / 2, ay - 12 * PT, "attention", "color: rgb(0 90 90)");
+
+// READ result: ball -> can
+const tBall = R("tBall"), tCan = R("tCan");
+path(`M${tBall.r + g} ${tBall.cy} H${tCan.l - g}`, { col: TEAL });
+label((tBall.r + tCan.l) / 2, tBall.cy - 6.5 * PT, "transfer", "color: var(--muted);");
+
+// WRITE: DiT -> generated video -> tracker -> loss, and the update loop
+const dW = R("ditW"), ob = R("outBar"), ib = R("injBar"), gen = R("gen"), trk = R("trk"), loss = R("loss");
+path(`M${dW.r} ${ob.cy} H${gen.l - g}`);
+path(`M${gen.r + g} ${gen.cy} H${trk.l - g}`);
+path(`M${trk.r + g} ${trk.cy} H${loss.l - g}`);
+const yLoop = pW.b - 9 * PT, xLoop = pW.l + 6 * PT, rc = 3 * PT;
+path(`M${loss.cx} ${loss.b + 1} V${yLoop - rc} Q${loss.cx} ${yLoop} ${loss.cx - rc} ${yLoop} H${xLoop + rc}
+      Q${xLoop} ${yLoop} ${xLoop} ${yLoop - rc} V${ib.cy + rc} Q${xLoop} ${ib.cy} ${xLoop + rc} ${ib.cy} H${ib.l}`,
+     { col: AMBER, w: .7, tip: 0, dash: [2.2, 1.6] });
+dot(ib.l, ib.cy, "rgb(230 140 0)", 1.8);
+label(trk.cx, yLoop, "update&nbsp;" + tex("\\steerDir"),
+      "color: rgb(150 88 0); background: #fff8ec; padding: 0 2pt; border-radius: 2pt;");
+
+// WRITE result: baseline -> steered
+const bs = R("base"), st = R("steer");
+path(`M${bs.r + g} ${bs.cy} H${st.l - g}`, { col: AMBER });
+label((bs.r + st.l) / 2, bs.cy - 7 * PT, tex("+\\alphastr\\steerDir"));
+
+// mismatch: bolt on the result cards' right edge, arrow into the joint card
+const yGap = (rR.b + rW.t) / 2, xb = rR.r - .32 * 37.8;
+const B = [[-.122, .5], [.195, .5], [.073, .134], [.28, .122], [-.159, -.5], [-.073, -.085], [-.28, -.073]];
+const s = 1.05 * 37.8;
+// liquid glass, like the cards: frosted white body tinted teal (top, READ) -> amber (bottom, WRITE),
+// a sheen on the upper half, a white inner rim, a hairline outline and a soft shadow
+const bd = "M" + B.map(([x, y]) => `${xb + x * s} ${yGap - y * s}`).join(" L") + " Z";
+const by0 = yGap - s / 2, by1 = yGap + s / 2;
+defs.insertAdjacentHTML("beforeend", `
+  <linearGradient id="boltTint" gradientUnits="userSpaceOnUse" x1="${xb}" y1="${by0}" x2="${xb}" y2="${by1}">
+    <stop offset="0" stop-color="rgb(0 128 128)" stop-opacity=".7"/>
+    <stop offset=".52" stop-color="#fff" stop-opacity="0"/>
+    <stop offset="1" stop-color="rgb(230 140 0)" stop-opacity=".8"/></linearGradient>
+  <linearGradient id="boltSheen" gradientUnits="userSpaceOnUse" x1="${xb - s * .3}" y1="${by0}" x2="${xb + s * .1}" y2="${yGap + s * .05}">
+    <stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  <clipPath id="boltClip"><path d="${bd}"/></clipPath>
+  <filter id="boltShadow" x="-50%" y="-30%" width="200%" height="160%">
+    <feDropShadow dx="0" dy="${1.2 * PT}" stdDeviation="${1.6 * PT}" flood-color="#000" flood-opacity=".18"/></filter>`);
+W.insertAdjacentHTML("beforeend", `
+  <path d="${bd}" fill="#fff" fill-opacity=".9" filter="url(#boltShadow)"/>
+  <path d="${bd}" fill="url(#boltTint)"/>
+  <path d="${bd}" fill="url(#boltSheen)"/>
+  <path d="${bd}" fill="none" stroke="#fff" stroke-width="${1.5 * PT}" stroke-opacity=".9" stroke-linejoin="round" clip-path="url(#boltClip)"/>
+  <path d="${bd}" fill="none" stroke="#000" stroke-opacity=".3" stroke-width="${.55 * PT}" stroke-linejoin="round"/>`);
+label(rR.r - .77 * 37.8, yGap, "<span class=hdr>Mismatch</span>", "transform: translate(-100%,-50%); font-size: 9.5pt; font-variant-caps: small-caps; letter-spacing: .035em;");
+path(`M${rR.r + 1 * PT} ${yGap} H${jo.l - g}`, { col: "#8c8c8c", w: .7, tip: 4.2, dash: [2.2, 1.6] });
+}
+
+// ---- web: wires are measured at zoom 1, then the figure is zoomed to the frame width
+// (CSS zoom re-lays out at the new size, so text and clips stay sharp; a transform would blur)
+let W0, H0;
+function fit() {
+  const f = document.getElementById("fig"), s = innerWidth / W0, h = Math.ceil(H0 * s);
+  f.style.zoom = s;
+  document.body.style.height = h + "px";
+  parent.postMessage({ figHeight: h }, "*");
+}
+document.fonts.ready.then(() => {
+  const f = document.getElementById("fig"); W0 = f.offsetWidth; H0 = f.offsetHeight;
+  wires(); fit(); addEventListener("resize", fit);
+});
+</script>
+</body>
+</html>
