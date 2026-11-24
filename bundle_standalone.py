@@ -1,20 +1,49 @@
 """Bundle the project page into one self-contained HTML file.
 
-usage: python bundle.py <page_root> <out.html>
+usage: python bundle_standalone.py <page_root> <out.html> [--full]
 Media go into a per-document base64 map; a small shim turns them into blob URLs
 on demand (covers static attributes and paths built in JS). Iframes become srcdoc.
+Media no page source mentions are left out. By default videos are re-encoded
+(H.264 CRF 32, <=832 px wide) and raster images become WebP; --full keeps originals.
 """
-import base64, html, json, mimetypes, re, sys, urllib.request
+import base64, html, json, mimetypes, re, subprocess, sys, tempfile, urllib.request
 from pathlib import Path
 
 ROOT = Path(sys.argv[1]).resolve()
+FULL = '--full' in sys.argv
 MEDIA = {'.mp4', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp'}
+# every page source, to tell which media are used; paths built in JS are matched by DYNAMIC
+SOURCES = '\n'.join(p.read_text() for p in ROOT.rglob('*') if p.suffix in {'.html', '.js', '.css'}
+                    and 'vendor' not in p.parts and '(standalone)' not in p.name)
+DYNAMIC = re.compile(r'videos/latents/|images/beta/|videos/xp_')
 UA = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120 Safari/537.36'}
 mimetypes.add_type('font/woff2', '.woff2'); mimetypes.add_type('font/otf', '.otf')
 
 
 def get(url):
     return urllib.request.urlopen(urllib.request.Request(url, headers=UA)).read()
+
+
+def encode(p):
+    """(mime, bytes) for a media file, shrunk unless --full; never larger than the original."""
+    mime, raw = mimetypes.guess_type(p.name)[0], p.read_bytes()
+    if FULL or p.suffix.lower() not in {'.mp4', '.png', '.jpg', '.jpeg'}:
+        return mime, raw
+    with tempfile.TemporaryDirectory() as t:
+        if p.suffix == '.mp4':
+            out, new_mime = Path(t) / 'o.mp4', mime
+            cmd = ['ffmpeg', '-v', 'error', '-i', str(p), '-vf', "scale='min(iw,832)':-2", '-c:v', 'libx264',
+                   '-preset', 'slow', '-crf', '32', '-pix_fmt', 'yuv420p', '-an', '-movflags', '+faststart', str(out)]
+        else:
+            out, new_mime = Path(t) / 'o.webp', 'image/webp'
+            cmd = ['cwebp', '-quiet', '-q', '80', str(p), '-o', str(out)]
+        subprocess.run(cmd, check=True)
+        b = out.read_bytes()
+    return (new_mime, b) if len(b) < len(raw) else (mime, raw)
+
+
+def used(rel):
+    return Path(rel).name in SOURCES or DYNAMIC.search(rel)
 
 
 def data_uri(b, mime):
@@ -60,8 +89,10 @@ def build(doc, media_dirs, skip=()):
     assets = {}
     for md in media_dirs:
         for p in sorted((d / md).rglob('*')):
-            if p.suffix.lower() in MEDIA and not any(s in p.parts for s in skip):
-                assets[p.relative_to(d).as_posix()] = [mimetypes.guess_type(p.name)[0], base64.b64encode(p.read_bytes()).decode()]
+            rel = p.relative_to(d).as_posix()
+            if p.suffix.lower() in MEDIA and not any(s in p.parts for s in skip) and used(p.relative_to(ROOT).as_posix()):
+                mime, b = encode(p)
+                assets[rel] = [mime, base64.b64encode(b).decode()]
 
     # external/preconnect noise and the noscript fallback
     src = re.sub(r'\s*<link rel="preconnect"[^>]*>', '', src)
