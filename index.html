@@ -33,7 +33,7 @@
   <!-- Critical CSS - Load synchronously -->
   <link rel="stylesheet" href="static/css/bulma.min.css">
   <link rel="stylesheet" href="static/css/index.css">
-  <link rel="stylesheet" href="static/css/custom.css?v=3">
+  <link rel="stylesheet" href="static/css/custom.css?v=4">
 
   <!-- Non-critical CSS - Load asynchronously -->
   <link rel="preload" href="static/css/bulma-carousel.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -53,11 +53,10 @@
   <script defer src="static/js/bulma-carousel.min.js"></script>
   <script defer src="static/js/bulma-slider.min.js"></script>
   <script defer src="static/js/index.js"></script>
-  <script defer src="static/js/steering.js"></script>
   <script defer src="static/js/occlusion.js"></script>
   <script defer src="static/js/probing.js"></script>
   <script defer src="static/js/extrapolation.js"></script>
-  <script defer src="static/js/beta.js?v=3"></script>
+  <script defer src="static/js/beta.js?v=4"></script>
   <script defer src="static/js/trained.js?v=2"></script>
 </head>
 <body>
@@ -117,7 +116,6 @@
           generation and optimized on the motion an object tracker measures in the generated video. Injecting the probe
           direction changes the motion unreliably or degrades the video. In a preliminary study on Wan&nbsp;2.1, the
           tracker-trained direction turns the ball but barely predicts its motion, whereas a jointly trained direction does both.
-          <em>Clips in the Write row are illustrative, from an earlier probe-steering run on Wan&nbsp;2.1.</em>
         </h2>
       </div>
     </div>
@@ -162,7 +160,7 @@
           <div class="finding">
             <span class="finding-num">01</span>
             <h3 class="title is-5">Decodable</h3>
-            <p>Speed, momentum and gravity are linearly decodable from five video DiTs, including two world models, at noise levels where a probe on the model input is at chance. Pooling with the model's own attention beats a global readout.</p>
+            <p>Speed, momentum and gravity are linearly decodable from five video DiTs, including two world models, at noise levels where a probe on the model input is at chance. On average, pooling with the model's own attention beats a global probe.</p>
           </div>
         </div>
         <div class="column">
@@ -209,7 +207,7 @@
         <div class="column">
           <figure class="video-slot" data-file="scenario_collision.mp4">
             <video src="static/videos/scenario_collision.mp4" poster="static/images/scene_elastic-collision-continuous.png" autoplay muted loop playsinline></video>
-            <figcaption><strong>Elastic collision</strong> · total momentum, pre/post phase</figcaption>
+            <figcaption><strong>Elastic collision</strong> · total momentum, per-ball speed</figcaption>
           </figure>
         </div>
         <div class="column">
@@ -247,11 +245,11 @@
           </figure>
         </div>
         <div class="column is-5">
-          <h3 class="title is-4">Watching a probe read the collision</h3>
+          <h3 class="title is-4">A probe reading a collision</h3>
           <p>
-            A collision clip, noised to 50% and passed once through Wan&nbsp;2.1. Linear probes on the activations read each
-            ball's direction and speed, drawn as dark arrows over the true velocity (light) and as dots on the speed chart.
-            The clip is held out from the probes' training, so the probe has never seen it.
+            A collision clip, noised to diffusion timestep 500 of 1000 and passed once through Wan&nbsp;2.1. Linear probes
+            on the activations read each ball's velocity: dark arrows are the predictions, light arrows the true velocity,
+            and the dots on the chart the predicted speed. The clip is held out from the probes' training.
           </p>
           <p class="readout-prov">
             Wan&nbsp;2.1, block 31, out-of-fold ridge probes on region-pooled activations from our earlier analysis (not
@@ -263,8 +261,7 @@
 
       <h3 class="title is-4 has-text-centered">How We Probe a Video Model</h3>
       <p class="section-lead">
-        From a simulated clip to a single number: how well a linear readout of the model's activations recovers a physical
-        quantity. The animation walks through the five steps.
+        The five steps from a simulated clip to a probe score.
       </p>
       <figure class="pipeline-figure">
         <iframe class="fig-frame" src="static/pipeline/index.html" scrolling="no" loading="lazy"
@@ -277,11 +274,12 @@
         <li><strong>Encode.</strong> The model's own VAE compresses the clip into the latent video z<sub>0</sub>, in space and
           in time (about four frames per latent frame).</li>
         <li><strong>Forward noising.</strong> The latent is mixed with Gaussian noise to a chosen level. We report it as SNR in dB,
-          from −40 (pure noise) to +16 (nearly clean), so levels are comparable across models.</li>
-        <li><strong>Capture activations.</strong> One forward pass of the frozen DiT, conditioned on the clean first frame as
-          anchor; we record the residual stream at its transformer blocks. No video is generated.</li>
-        <li><strong>Linear probe.</strong> Tokens in a small disk around the object are averaged, and a ridge regression maps
-          them to the target. We score R² with 5-fold cross-validation split by video.</li>
+          from −40 (almost pure noise) to +16 (nearly clean), so levels are comparable across models.</li>
+        <li><strong>Capture activations.</strong> One forward pass of the frozen DiT, conditioned on the clean first frame and
+          an empty prompt; we record the residual stream at the output of each block. No video is generated.</li>
+        <li><strong>Linear probe.</strong> Each token-frame is pooled with the attention sent from the object's tokens in the
+          conditioning frame, and a ridge regression maps the pooled activations to the target. We score R² with 5-fold
+          cross-validation split by video.</li>
       </ol>
       <!-- Main probing result: inputs + baselines (top), R^2 vs. noise per
            target (bottom). Numbers live in static/js/probing.js (paper Fig. 2 / supplement grid data). -->
@@ -289,8 +287,7 @@
         <p class="section-lead">
           The model's input already carries some physics: the noised latent <strong>z<sub>t</sub></strong> and the clean
           conditioning frame <strong>z<sub>c</sub></strong>. We therefore probe that input too, with a random feature
-          expansion so it has as many features as an activation token. Slide the noise level to see how much the input
-          still shows and what each probe recovers.
+          expansion so it has as many features as an activation token. The slider sets the noise level.
         </p>
         <div class="pr-inputs">
           <figure class="pr-tile">
@@ -385,14 +382,14 @@
   <section class="section">
     <div class="container is-max-desktop">
       <div class="has-text-centered">
-        <h2 class="title is-3">Out of Sight, Out of Mind?</h2>
+        <h2 class="title is-3">Occlusion</h2>
       </div>
       <div class="columns is-centered">
         <div class="column is-four-fifths">
           <p class="section-lead">
-            Speed and direction stay constant in this rolling scene, so a model that carries them forward could still expose
-            them once a cardboard sheet hides the ball. Grab the cardboard at the left edge of the clip, drag it over the
-            ball, and watch the probes lose it.
+            Speed and direction stay constant in this rolling scene, so a model that tracks them could still expose them
+            after a cardboard sheet hides the ball. Drag the cardboard from the left edge of the clip over the ball to see
+            the probe scores in the hidden frames.
           </p>
         </div>
       </div>
@@ -431,77 +428,13 @@
             10 report blocks with the highest R² averaged over the hidden frames, so it is selected on the window it is
             scored on (Wan block 4, CogVideoX 8, Open-Sora 11, Cosmos 18, LingBot 4). Most blocks fall to chance
             once the ball is hidden; mid-depth Cosmos-Predict&nbsp;2.5 blocks are the exception, and only at low noise
-            (R²&nbsp;0.51 at +8&nbsp;dB, 0.23 at 0&nbsp;dB for its best block).
+            (best of its 10 blocks: R²&nbsp;0.51 at +8&nbsp;dB, 0.23 at 0&nbsp;dB).
           </p>
         </div>
       </div>
     </div>
   </section>
 
-
-  <!-- Steering -->
-  <section class="section hero is-light">
-    <div class="container is-max-desktop">
-      <div class="has-text-centered">
-        <h2 class="title is-3">Steering: Flipping the Rolling Direction</h2>
-      </div>
-      <div class="columns is-centered">
-        <div class="column is-four-fifths">
-          <p class="section-lead">
-            We rotate each token's activation toward the probe's weight vector by spherical
-            interpolation, only in the high-noise part of sampling. Left alone, the ball rolls left; drag the slider to raise
-            the steering strength and watch the injected direction push it right.
-          </p>
-        </div>
-      </div>
-
-      <!-- Steering explorer: one clip per (model, strength). Each model button
-           carries its own clip set: data-pattern ({level} is replaced by each
-           entry of data-levels; "label=file.mp4" shows label but uses
-           file.mp4 as is) and data-ar (clip aspect ratio). -->
-      <div class="steer-demo" id="steer-demo">
-        <div class="steer-models" hidden>
-          <button type="button" class="steer-model-btn is-active" data-model="wan" aria-pressed="true"
-                  data-pattern="steering/wan/steer_L21_fixed_slerp_{level}.mp4"
-                  data-levels="0=steering/wan/steer_L21_fixed_slerp_0.00.mp4,
-                               0.02=steering/wan/steer_L21_fixed_slerp_0.02.mp4,
-                               0.04=steering/wan/steer_L21_fixed_slerp_0.04.mp4,
-                               0.06=steering/wan/steer_L21_fixed_slerp_0.06.mp4,
-                               0.08=steering/wan/steer_L21_fixed_slerp_0.08.mp4,
-                               0.1=steering/wan/steer_L21_fixed_slerp_0.10.mp4,
-                               0.12=steering/wan/steer_L21_fixed_slerp_0.12.mp4,
-                               0.14=steering/wan/steer_L21_fixed_slerp_0.14.mp4,
-                               0.16=steering/wan/steer_L21_fixed_slerp_0.16.mp4,
-                               0.18=steering/wan/steer_L21_fixed_slerp_0.18.mp4,
-                               0.2=steering/wan/steer_L21_fixed_slerp_0.20.mp4"
-                  data-ar="832 / 480">Wan 2.1</button>
-        </div>
-
-        <div class="steer-stage">
-          <figure class="video-slot" style="--ar: 832 / 480" data-file="steering/wan/steer_L21_fixed_slerp_0.00.mp4">
-            <video src="static/videos/steering/wan/steer_L21_fixed_slerp_0.00.mp4" autoplay muted loop playsinline></video>
-          </figure>
-        </div>
-
-        <div class="steer-control">
-          <label class="steer-label" for="steer-strength">
-            Steering strength <output id="steer-value" for="steer-strength">0</output>
-          </label>
-          <input type="range" id="steer-strength" class="steer-range" min="0" max="10" step="1" value="0">
-          <div class="steer-ticks" aria-hidden="true"></div>
-        </div>
-      </div>
-
-      <div class="columns is-centered">
-        <div class="column is-four-fifths">
-          <p class="section-note">
-            Wan&nbsp;2.1. The probe direction flips the rolling direction in 45% of clips, compared with 30% when the
-            text prompt asks for the opposite direction.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <!-- Steering vs readout: probing-weight slider (static/js/beta.js) -->
   <section class="section beta-demo" id="beta-demo">
@@ -512,10 +445,9 @@
       <div class="columns is-centered">
         <div class="column is-four-fifths">
           <p class="section-lead">
-            A direction can be trained to steer the ball, to read its motion, or both. The probing weight&nbsp;&beta; trades
-            the two: at &beta;&nbsp;=&nbsp;0 it only steers, at &beta;&nbsp;=&nbsp;1 it only reads. The dashed outline is where
-            the direction's linear readout predicts the ball will end. Drag &beta; and watch whether the ball both turns and
-            lands inside it.
+            A direction can be trained to steer the ball, fitted to read its motion, or trained to do both. The slider runs
+            from the steering-only direction through the joint direction to the ridge probe. The dashed outline is where the
+            direction's linear readout predicts the ball will end.
           </p>
         </div>
       </div>
@@ -544,15 +476,15 @@
         </div>
 
         <div class="beta-panel">
-          <label class="beta-head" for="beta-range">Probing weight &beta; <output class="beta-value" for="beta-range">0.00</output></label>
+          <label class="beta-head" for="beta-range">Steer &harr; read <output class="beta-value" for="beta-range">steering only</output></label>
           <input type="range" id="beta-range" class="beta-range" min="0" max="1" step="0.01" value="0">
-          <div class="beta-ends"><span class="s">steer only</span><span>joint</span><span class="r">read only</span></div>
+          <div class="beta-ends"><span class="s">steering only</span><span>joint</span><span class="r">ridge probe</span></div>
           <div class="beta-chips"></div>
           <div class="beta-metrics">
             <div class="beta-metric" style="--c: var(--c-steer)"><div class="k">turned &amp; intact<br>(30 test seeds)</div><div class="v beta-ti"></div></div>
-            <div class="beta-metric" style="--c: var(--c-read)"><div class="k">end inside readout outline<br>(30 test seeds)</div><div class="v beta-in"></div></div>
+            <div class="beta-metric" style="--c: var(--c-read)"><div class="k">end inside readout outline<br>(illustrative)</div><div class="v beta-in"></div></div>
           </div>
-          <div class="beta-mini"><svg viewBox="0 0 300 130" aria-label="Both rates over the probing weight"></svg></div>
+          <div class="beta-mini"><svg viewBox="0 0 300 130" aria-label="Both rates from steering only to ridge probe; dots mark measured turned-and-intact rates"></svg></div>
           <div class="beta-verdict"></div>
         </div>
       </div>
@@ -561,8 +493,9 @@
         <div class="column is-four-fifths">
           <p class="section-note">
             Wan&nbsp;2.1, block&nbsp;21. The images are generations steered by the steering-only, joint and ridge-probe
-            directions, shown at &beta;&nbsp;=&nbsp;0, 0.5 and 1; positions in between blend the two nearest.
-            Illustrative: the outlines and the rates are placeholders.
+            directions at the left end, middle and right end of the slider; positions in between blend the two nearest.
+            Dots in the chart are measured turned &amp; intact rates over 30 test seeds (83%, 87%, 17%). The dashed
+            curves between them, the outlines and the readout-outline rate are illustrative.
           </p>
         </div>
       </div>
@@ -578,9 +511,9 @@
       <div class="columns is-centered">
         <div class="column is-four-fifths">
           <p class="section-lead">
-            Three directions injected at the same block of Wan&nbsp;2.1, in the first five sampling steps: a ridge probe
-            fitted only to read the ball's velocity, a direction trained only to steer it, and a joint direction trained to
-            do both. Pick a test seed and switch between them.
+            A preliminary study on Wan&nbsp;2.1, block&nbsp;21, injecting in the first five sampling steps. Three directions
+            are compared: a ridge probe fitted on generated clips to read the ball's velocity, a direction trained with a
+            differentiable tracker to steer it, and a joint direction trained to do both.
           </p>
         </div>
       </div>
@@ -602,7 +535,8 @@
         <div class="column is-four-fifths">
           <p class="section-note">
             Rates are over 30 held-out test seeds; five of them are shown. A seed counts as intact when the floor changes by
-            at most 8% of the intensity range.
+            at most 8% of the intensity range. Readout on the same 30 clips (R² against the tracked horizontal velocity):
+            ridge probe 0.17, joint 0.17, steering only 0.006.
           </p>
         </div>
       </div>

@@ -48,32 +48,11 @@
 .finding .title { margin: 0.4rem 0 0.6rem !important; }
 .finding p { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; }
 
-/* ---------- steering explorer: strength slider */
-.steer-demo { max-width: 520px; margin: 0 auto; }
-/* model pills share .xp-swaps with the other panels; the active one takes its model colour */
-.steer-models { margin: 0 0 1.25rem; }
-.steer-models button[aria-pressed="true"][data-model="wan"] { background: var(--m-wan); border-color: var(--m-wan); }
-.steer-models button[aria-pressed="true"][data-model="cog"] { background: var(--m-cog); border-color: var(--m-cog); }
-.steer-models button[aria-pressed="true"][data-model="sora"] { background: var(--m-sora); border-color: var(--m-sora); }
-.steer-stage { display: grid; }
-.steer-stage > .video-slot { grid-area: 1 / 1; }
-.steer-stage > .video-slot[hidden] { display: block; visibility: hidden; }
-
+/* ---------- slider control (used by the probing noise slider) */
 .steer-control { margin-top: 1.25rem; }
 .steer-label { display: flex; justify-content: space-between; align-items: baseline; font-weight: 600; color: var(--text-primary); font-size: 0.9rem; }
 .steer-label output { font: 600 0.9rem 'SF Mono', 'Monaco', 'Roboto Mono', monospace; color: var(--primary-color); }
 .steer-range { width: 100%; margin: 0.6rem 0 0.2rem; accent-color: var(--primary-color); cursor: pointer; }
-.steer-ticks { display: flex; justify-content: space-between; padding: 0 2px; }
-.steer-ticks button {
-  border: 0; background: none; padding: 0.15rem 0.25rem; cursor: pointer;
-  font: 0.75rem 'SF Mono', 'Monaco', 'Roboto Mono', monospace; color: var(--text-secondary);
-}
-.steer-ticks button.is-active { color: var(--primary-color); font-weight: 600; }
-
-@media screen and (max-width: 480px) {
-  .steer-ticks button { font-size: 0.7rem; padding: 0.15rem 0.1rem; }
-  .steer-ticks button:nth-child(even) { visibility: hidden; }
-}
 
 /* ---------- gallery: hover/focus tooltip drawn inside the clip's frame
    (the carousel clips anything that overflows its items) */

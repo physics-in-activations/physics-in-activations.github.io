@@ -1,7 +1,9 @@
-/* Steering vs readout explorer: one probing weight beta, the paper's Wan block-21 stills
-   (beta 0 = steering only, 0.5 = joint, 1 = ridge probe; in between cross-fades the two nearest),
+/* Steering vs readout explorer: one steer-to-read slider over the paper's Wan block-21 stills
+   (0 = steering only, 0.5 = joint, 1 = ridge probe; in between cross-fades the two nearest),
    and an outline at the end position the direction's linear readout predicts.
-   Ball end positions are read off the stills; outlines and aggregate curves are illustrative. */
+   Ball end positions are read off the stills. Measured: turned & intact at the three directions
+   (paper Table, block 21), marked as dots; everything between them, the outlines and the
+   readout-outline rate are illustrative. */
 (() => {
   const root = document.getElementById('beta-demo');
   if (!root) return;
@@ -21,7 +23,8 @@
                { img: 'probe', end: [225, 137], pred: [222, 135], pr: 22, turned: false } ] },
   };
   const ORDER = [13, 7, 12];
-  const TI = [83, 86, 87, 58, 17], IN = [6, 41, 80, 88, 93];   // knots at beta 0, .25, .5, .75, 1
+  const TI = [83, 86, 87, 58, 17], IN = [6, 41, 80, 88, 93];   // knots at slider 0, .25, .5, .75, 1
+  const MEASURED = { 0: 'steering only', 0.5: 'joint', 1: 'ridge probe' };   // TI at these is the paper's
 
   const $ = s => root.querySelector(s);
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -46,9 +49,15 @@
   for (let i = 0; i <= 100; i++) { const b = i / 100; if (knot(TI, b) >= 75 && knot(IN, b) >= 75) { if (lo === null) lo = b; hi = b; } }
   if (lo !== null) mk('rect', { x: X(lo), y: T, width: X(hi) - X(lo), height: B - T, fill: 'rgb(34 165 153 / .1)' });
   [0, 50, 100].forEach(v => { mk('line', { x1: L, x2: R, y1: Y(v), y2: Y(v), stroke: '#e2e8f0' }); mk('text', { x: L - 4, y: Y(v) + 3, 'text-anchor': 'end' }).textContent = v + '%'; });
-  [0, .5, 1].forEach(b => { mk('text', { x: X(b), y: B + 13, 'text-anchor': 'middle' }).textContent = 'β ' + b; });
+  [0, .5, 1].forEach(b => { mk('text', { x: X(b), y: B + 13, 'text-anchor': 'middle' }).textContent = ['steer', 'joint', 'probe'][b * 2]; });
   const curve = (arr, col) => { let d = ''; for (let i = 0; i <= 50; i++) { const b = i / 50; d += (i ? 'L' : 'M') + X(b).toFixed(1) + ' ' + Y(knot(arr, b)).toFixed(1); } mk('path', { d, fill: 'none', stroke: col, 'stroke-width': 2.2 }); };
   curve(TI, '#e07a2f'); curve(IN, '#2563eb');
+  mini.querySelectorAll('path').forEach(p => set(p, { 'stroke-dasharray': '4 3', opacity: .7 }));   // curves are illustrative
+  Object.keys(MEASURED).forEach(k => {   // measured turned & intact: solid dots with their value
+    const b = +k, v = knot(TI, b);
+    mk('circle', { cx: X(b), cy: Y(v), r: 3.5, fill: '#e07a2f', stroke: '#fff', 'stroke-width': 1.2 });
+    mk('text', { x: X(b) + (b === 1 ? -6 : b === 0 ? 6 : 0), y: Y(v) - 7, 'text-anchor': b === 1 ? 'end' : b === 0 ? 'start' : 'middle', fill: '#e07a2f', 'font-weight': 700 }).textContent = v + '%';
+  });
   const vline = mk('line', { y1: T, y2: B, stroke: '#0f172a', 'stroke-width': 1, 'stroke-dasharray': '2 3' });
   const dTI = mk('circle', { r: 4, fill: '#e07a2f', stroke: '#fff', 'stroke-width': 1.5 });
   const dIN = mk('circle', { r: 4, fill: '#2563eb', stroke: '#fff', 'stroke-width': 1.5 });
@@ -57,7 +66,7 @@
   function render() {
     const b = +range.value, S = SEEDS[seed];
     pills.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', +x.dataset.seed === seed));
-    $('.beta-value').textContent = b.toFixed(2);
+    $('.beta-value').textContent = MEASURED[b] || 'blend';
 
     const seg = b < .5 ? 0 : 1, t = seg === 0 ? b / .5 : (b - .5) / .5;
     const K0 = S.k[seg], K1 = S.k[seg + 1], dom = t < .5 ? K0 : K1;
@@ -86,7 +95,7 @@
       : '<b>Neither.</b>';
 
     const ti = knot(TI, b), inn = knot(IN, b);
-    $('.beta-ti').textContent = Math.round(ti) + '%'; $('.beta-in').textContent = Math.round(inn) + '%';
+    $('.beta-ti').textContent = (MEASURED[b] ? '' : '≈') + Math.round(ti) + '%'; $('.beta-in').textContent = '≈' + Math.round(inn) + '%';
     set(vline, { x1: X(b), x2: X(b) }); set(dTI, { cx: X(b), cy: Y(ti) }); set(dIN, { cx: X(b), cy: Y(inn) });
   }
   range.addEventListener('input', render);
