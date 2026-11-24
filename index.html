@@ -503,46 +503,6 @@
     </div>
   </section>
 
-  <!-- Trained directions: one seed, four directions (static/js/trained.js) -->
-  <section class="section trained-demo" id="trained-demo">
-    <div class="container is-max-desktop">
-      <div class="has-text-centered">
-        <h2 class="title is-3">Probe, Steering-Only and Joint Directions</h2>
-      </div>
-      <div class="columns is-centered">
-        <div class="column is-four-fifths">
-          <p class="section-lead">
-            Three directions injected at the same block of Wan&nbsp;2.1, in the first five sampling steps: a ridge probe
-            fitted only to read the ball's velocity, a direction trained only to steer it, and a joint direction trained to
-            do both. Pick a test seed and switch between them.
-          </p>
-        </div>
-      </div>
-
-      <div class="tr-wrap">
-        <div class="xp-swaps tr-seeds" role="group" aria-label="Test seed"></div>
-        <div class="tr-dirs" role="group" aria-label="Direction">
-          <button type="button" data-kind="base" style="--c: var(--c-base)" aria-pressed="false">Unsteered<small>reference</small></button>
-          <button type="button" data-kind="probe" style="--c: var(--c-probe)" aria-pressed="false">Ridge probe<small>17% turned &amp; intact</small></button>
-          <button type="button" data-kind="steer" style="--c: var(--c-steer)" aria-pressed="false">Steering only<small>83% turned &amp; intact</small></button>
-          <button type="button" data-kind="joint" style="--c: var(--c-joint)" aria-pressed="true">Joint<small>87% turned &amp; intact</small></button>
-        </div>
-        <div class="tr-stage"></div>
-        <p class="tr-target"></p>
-        <div class="tr-chips"></div>
-      </div>
-
-      <div class="columns is-centered">
-        <div class="column is-four-fifths">
-          <p class="section-note">
-            Rates are over 30 held-out test seeds; five of them are shown. A seed counts as intact when the floor changes by
-            at most 8% of the intensity range.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- Steering vs readout: probing-weight slider (static/js/beta.js) -->
   <section class="section beta-demo" id="beta-demo">
     <div class="container is-max-desktop">
@@ -603,6 +563,46 @@
             Wan&nbsp;2.1, block&nbsp;21. The images are generations steered by the steering-only, joint and ridge-probe
             directions, shown at &beta;&nbsp;=&nbsp;0, 0.5 and 1; positions in between blend the two nearest.
             Illustrative: the outlines and the rates are placeholders.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trained directions: one seed, four directions (static/js/trained.js) -->
+  <section class="section trained-demo" id="trained-demo">
+    <div class="container is-max-desktop">
+      <div class="has-text-centered">
+        <h2 class="title is-3">Probe, Steering-Only and Joint Directions</h2>
+      </div>
+      <div class="columns is-centered">
+        <div class="column is-four-fifths">
+          <p class="section-lead">
+            Three directions injected at the same block of Wan&nbsp;2.1, in the first five sampling steps: a ridge probe
+            fitted only to read the ball's velocity, a direction trained only to steer it, and a joint direction trained to
+            do both. Pick a test seed and switch between them.
+          </p>
+        </div>
+      </div>
+
+      <div class="tr-wrap">
+        <div class="xp-swaps tr-seeds" role="group" aria-label="Test seed"></div>
+        <div class="tr-dirs" role="group" aria-label="Direction">
+          <button type="button" data-kind="base" style="--c: var(--c-base)" aria-pressed="false">Unsteered<small>reference</small></button>
+          <button type="button" data-kind="probe" style="--c: var(--c-probe)" aria-pressed="false">Ridge probe<small>17% turned &amp; intact</small></button>
+          <button type="button" data-kind="steer" style="--c: var(--c-steer)" aria-pressed="false">Steering only<small>83% turned &amp; intact</small></button>
+          <button type="button" data-kind="joint" style="--c: var(--c-joint)" aria-pressed="true">Joint<small>87% turned &amp; intact</small></button>
+        </div>
+        <div class="tr-stage"></div>
+        <p class="tr-target"></p>
+        <div class="tr-chips"></div>
+      </div>
+
+      <div class="columns is-centered">
+        <div class="column is-four-fifths">
+          <p class="section-note">
+            Rates are over 30 held-out test seeds; five of them are shown. A seed counts as intact when the floor changes by
+            at most 8% of the intensity range.
           </p>
         </div>
       </div>
