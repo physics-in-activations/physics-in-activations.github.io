@@ -58,6 +58,7 @@
   <script defer src="static/js/probing.js"></script>
   <script defer src="static/js/extrapolation.js"></script>
   <script defer src="static/js/beta.js?v=2"></script>
+  <script defer src="static/js/trained.js?v=2"></script>
 </head>
 <body>
 
@@ -459,7 +460,7 @@
            entry of data-levels; "label=file.mp4" shows label but uses
            file.mp4 as is) and data-ar (clip aspect ratio). -->
       <div class="steer-demo" id="steer-demo">
-        <div class="xp-swaps steer-models" role="group" aria-label="Model">
+        <div class="steer-models" hidden>
           <button type="button" class="steer-model-btn is-active" data-model="wan" aria-pressed="true"
                   data-pattern="steering/wan/steer_L21_fixed_slerp_{level}.mp4"
                   data-levels="0=steering/wan/steer_L21_fixed_slerp_0.00.mp4,
@@ -474,34 +475,6 @@
                                0.18=steering/wan/steer_L21_fixed_slerp_0.18.mp4,
                                0.2=steering/wan/steer_L21_fixed_slerp_0.20.mp4"
                   data-ar="832 / 480">Wan 2.1</button>
-          <button type="button" class="steer-model-btn" data-model="cog" aria-pressed="false"
-                  data-pattern="steering/cogvideox/steer_L3_fixed_slerp_{level}.mp4"
-                  data-levels="0=steering/cogvideox/steer_L3_fixed_slerp_0.00.mp4,
-                               0.02=steering/cogvideox/steer_L3_fixed_slerp_0.02.mp4,
-                               0.04=steering/cogvideox/steer_L3_fixed_slerp_0.04.mp4,
-                               0.06=steering/cogvideox/steer_L3_fixed_slerp_0.06.mp4,
-                               0.08=steering/cogvideox/steer_L3_fixed_slerp_0.08.mp4,
-                               0.1=steering/cogvideox/steer_L3_fixed_slerp_0.10.mp4,
-                               0.12=steering/cogvideox/steer_L3_fixed_slerp_0.12.mp4,
-                               0.14=steering/cogvideox/steer_L3_fixed_slerp_0.14.mp4,
-                               0.16=steering/cogvideox/steer_L3_fixed_slerp_0.16.mp4,
-                               0.18=steering/cogvideox/steer_L3_fixed_slerp_0.18.mp4,
-                               0.2=steering/cogvideox/steer_L3_fixed_slerp_0.20.mp4"
-                  data-ar="1360 / 768">CogVideoX-1.5</button>
-          <button type="button" class="steer-model-btn" data-model="sora" aria-pressed="false"
-                  data-pattern="steering/opensora/steer_L16_fixed_slerp_{level}.mp4"
-                  data-levels="0=steering/opensora/steer_L16_fixed_slerp_0.00.mp4,
-                               0.02=steering/opensora/steer_L16_fixed_slerp_0.02.mp4,
-                               0.04=steering/opensora/steer_L16_fixed_slerp_0.04.mp4,
-                               0.06=steering/opensora/steer_L16_fixed_slerp_0.06.mp4,
-                               0.08=steering/opensora/steer_L16_fixed_slerp_0.08.mp4,
-                               0.1=steering/opensora/steer_L16_fixed_slerp_0.10.mp4,
-                               0.12=steering/opensora/steer_L16_fixed_slerp_0.12.mp4,
-                               0.14=steering/opensora/steer_L16_fixed_slerp_0.14.mp4,
-                               0.16=steering/opensora/steer_L16_fixed_slerp_0.16.mp4,
-                               0.18=steering/opensora/steer_L16_fixed_slerp_0.18.mp4,
-                               0.2=steering/opensora/steer_L16_fixed_slerp_0.20.mp4"
-                  data-ar="832 / 480">Open-Sora 2.0</button>
         </div>
 
         <div class="steer-stage">
@@ -522,8 +495,48 @@
       <div class="columns is-centered">
         <div class="column is-four-fifths">
           <p class="section-note">
-            The probe direction flips the rolling direction in 45% / 35% / 31% of clips (Wan / CogVideoX / Open-Sora),
-            compared with 30% / 2% / 4% when the text prompt asks for the opposite direction.
+            Wan&nbsp;2.1. The probe direction flips the rolling direction in 45% of clips, compared with 30% when the
+            text prompt asks for the opposite direction.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trained directions: one seed, four directions (static/js/trained.js) -->
+  <section class="section trained-demo" id="trained-demo">
+    <div class="container is-max-desktop">
+      <div class="has-text-centered">
+        <h2 class="title is-3">Probe, Steering-Only and Joint Directions</h2>
+      </div>
+      <div class="columns is-centered">
+        <div class="column is-four-fifths">
+          <p class="section-lead">
+            Three directions injected at the same block of Wan&nbsp;2.1, in the first five sampling steps: a ridge probe
+            fitted only to read the ball's velocity, a direction trained only to steer it, and a joint direction trained to
+            do both. Pick a test seed and switch between them.
+          </p>
+        </div>
+      </div>
+
+      <div class="tr-wrap">
+        <div class="xp-swaps tr-seeds" role="group" aria-label="Test seed"></div>
+        <div class="tr-dirs" role="group" aria-label="Direction">
+          <button type="button" data-kind="base" style="--c: var(--c-base)" aria-pressed="false">Unsteered<small>reference</small></button>
+          <button type="button" data-kind="probe" style="--c: var(--c-probe)" aria-pressed="false">Ridge probe<small>17% turned &amp; intact</small></button>
+          <button type="button" data-kind="steer" style="--c: var(--c-steer)" aria-pressed="false">Steering only<small>83% turned &amp; intact</small></button>
+          <button type="button" data-kind="joint" style="--c: var(--c-joint)" aria-pressed="true">Joint<small>87% turned &amp; intact</small></button>
+        </div>
+        <div class="tr-stage"></div>
+        <p class="tr-target"></p>
+        <div class="tr-chips"></div>
+      </div>
+
+      <div class="columns is-centered">
+        <div class="column is-four-fifths">
+          <p class="section-note">
+            Rates are over 30 held-out test seeds; five of them are shown. A seed counts as intact when the floor changes by
+            at most 8% of the intensity range.
           </p>
         </div>
       </div>
@@ -596,68 +609,6 @@
     </div>
   </section>
 
-  <!-- Gallery: video carousel -->
-  <section class="hero is-small">
-    <div class="hero-body">
-      <div class="container is-max-desktop">
-        <div class="has-text-centered">
-          <h2 class="title is-3">Gallery</h2>
-        </div>
-        <div class="columns is-centered">
-          <div class="column is-four-fifths">
-            <p class="section-lead">
-              More clips from the study: steered generations, and the scene variations (shape, background, perspective,
-              object count) the probes transfer to without refitting.
-            </p>
-          </div>
-        </div>
-        <div id="gallery-carousel" class="carousel results-carousel">
-          <div class="item">
-            <figure class="video-slot gallery-clip" style="--ar: 832 / 480" data-file="gallery/complete-transfer.mp4" tabindex="0" aria-describedby="tip-complete-transfer">
-              <video src="static/videos/gallery/complete-transfer.mp4" muted loop playsinline preload="metadata"></video>
-              <div class="gallery-tip" id="tip-complete-transfer" role="tooltip">Steering with a direction transferred across both the scene style and the camera perspective.</div>
-            </figure>
-            <h2 class="subtitle has-text-centered">Complete transfer</h2>
-          </div>
-          <div class="item">
-            <figure class="video-slot gallery-clip" style="--ar: 832 / 480" data-file="gallery/perspective-transfer.mp4" tabindex="0" aria-describedby="tip-perspective-transfer">
-              <video src="static/videos/gallery/perspective-transfer.mp4" muted loop playsinline preload="metadata"></video>
-              <div class="gallery-tip" id="tip-perspective-transfer" role="tooltip">Steering with a direction transferred between camera perspectives.</div>
-            </figure>
-            <h2 class="subtitle has-text-centered">Perspective transfer</h2>
-          </div>
-          <div class="item">
-            <figure class="video-slot gallery-clip" style="--ar: 832 / 480" data-file="gallery/style-transfer.mp4" tabindex="0" aria-describedby="tip-style-transfer">
-              <video src="static/videos/gallery/style-transfer.mp4" muted loop playsinline preload="metadata"></video>
-              <div class="gallery-tip" id="tip-style-transfer" role="tooltip">Steering with a direction transferred between scene styles (colors, background, object size, etc.).</div>
-            </figure>
-            <h2 class="subtitle has-text-centered">Style transfer</h2>
-          </div>
-          <div class="item">
-            <figure class="video-slot gallery-clip" style="--ar: 832 / 480" data-file="gallery/perspective-shift.mp4" tabindex="0" aria-describedby="tip-perspective-shift">
-              <video src="static/videos/gallery/perspective-shift.mp4" muted loop playsinline preload="metadata"></video>
-              <div class="gallery-tip" id="tip-perspective-shift" role="tooltip">Sometimes the camera shifts its perspective to accommodate the change in motion.</div>
-            </figure>
-            <h2 class="subtitle has-text-centered">Perspective shift</h2>
-          </div>
-          <div class="item">
-            <figure class="video-slot gallery-clip" style="--ar: 832 / 480" data-file="gallery/mitosis.mp4" tabindex="0" aria-describedby="tip-mitosis">
-              <video src="static/videos/gallery/mitosis.mp4" muted loop playsinline preload="metadata"></video>
-              <div class="gallery-tip" id="tip-mitosis" role="tooltip">Sometimes the ball duplicates itself, perhaps to satisfy the change in direction by spawning a second ball that rolls in the new direction.</div>
-            </figure>
-            <h2 class="subtitle has-text-centered">Mitosis</h2>
-          </div>
-          <div class="item">
-            <figure class="video-slot gallery-clip" style="--ar: 832 / 480" data-file="gallery/surface-surfing.mp4" tabindex="0" aria-describedby="tip-surface-surfing">
-              <video src="static/videos/gallery/surface-surfing.mp4" muted loop playsinline preload="metadata"></video>
-              <div class="gallery-tip" id="tip-surface-surfing" role="tooltip">Sometimes the steering direction misses the ball and moves the floor instead. The ball stays put and lets the surface do the rolling: why roll when you can surf?</div>
-            </figure>
-            <h2 class="subtitle has-text-centered">Surface surfing</h2>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
   </main>
 
