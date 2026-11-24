@@ -15,7 +15,7 @@ MEDIA = {'.mp4', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp'}
 # every page source, to tell which media are used; paths built in JS are matched by DYNAMIC
 SOURCES = '\n'.join(p.read_text() for p in ROOT.rglob('*') if p.suffix in {'.html', '.js', '.css'}
                     and 'vendor' not in p.parts and '(standalone)' not in p.name)
-DYNAMIC = re.compile(r'videos/latents/|images/beta/|videos/xp_')
+DYNAMIC = re.compile(r'videos/latents/|videos/trained/|images/beta/|videos/xp_')
 UA = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120 Safari/537.36'}
 mimetypes.add_type('font/woff2', '.woff2'); mimetypes.add_type('font/otf', '.otf')
 
