@@ -11,10 +11,6 @@
           k: [ { img: 'steer', end: [283, 130], pred: [ 64, 128], pr: 52, turned: true },
                { img: 'joint', end: [305, 135], pred: [298, 131], pr: 29, turned: true },
                { img: 'probe', end: [ 68, 123], pred: [ 71, 125], pr: 18, turned: false } ] },
-    1:  { dir: ['left', 'right'], start: [190, 137],
-          k: [ { img: 'steer', end: [375, 118], pred: [ 96, 166], pr: 52, turned: true },
-               { img: 'joint', end: [388, 137], pred: [380, 132], pr: 29, turned: true },
-               { img: 'probe', end: [404, 107], pred: [400, 110], pr: 21, turned: true } ] },
     7:  { dir: ['left', 'right'], start: [190, 135],
           k: [ { img: 'steer', end: [390, 128], pred: [ 22, 142], pr: 52, turned: true },
                { img: 'joint', end: [352, 148], pred: [345, 143], pr: 29, turned: true },
@@ -24,7 +20,7 @@
                { img: 'joint', end: [125,  80], pred: [131,  86], pr: 29, turned: true },
                { img: 'probe', end: [225, 137], pred: [222, 135], pr: 22, turned: false } ] },
   };
-  const ORDER = [13, 1, 7, 12];
+  const ORDER = [13, 7, 12];
   const TI = [83, 86, 87, 58, 17], IN = [6, 41, 80, 88, 93];   // knots at beta 0, .25, .5, .75, 1
 
   const $ = s => root.querySelector(s);
